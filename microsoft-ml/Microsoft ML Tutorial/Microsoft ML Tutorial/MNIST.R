@@ -1,7 +1,7 @@
 #12345678901234567890123456789012345678901234567890123456789012345678901
 # Use deep neural networks to identify handwritten digits in images.
 
-# This script shows how MML can be used to create deep convolutional
+# This script shows how Microsoft ML can be used to create deep convolutional
 # neural networks that classify handwritten digits images that were
 # obtained from the MNIST database as being one of the ten digits, 0-9.
 
@@ -10,7 +10,7 @@
 
 # For more information about neural networks, please consult:
 # https://azure.microsoft.com/en-us/documentation/articles/machine-learning-azure-ml-netsharp-reference-guide
-# IMPORTANT NOTE: As of this release, MML supports three kinds of
+# IMPORTANT NOTE: As of this release, Microsoft ML supports three kinds of
 # connection bundles described in this reference guide: full,
 # filtered, and convolutional.
 
@@ -30,12 +30,13 @@ if (!suppressPackageStartupMessages(require("MicrosoftML",
                                             quietly = TRUE,
                                             warn.conflicts = FALSE))) {
     stop("The MicrosoftML package does not seem to be installed, so this\n",
-         "script cannot be run. If Microsoft R Server with MML is installed,\n",
+         "script cannot be run. If Microsoft R Server with Microsoft ML is installed,\n",
          "you may need to switch the R engine option. In R Tools for Visual\n",
          "Studio, this option is under:\n",
          "\tR Tools -> Options -> R Engine.\n",
-         "If Microsoft R Server with MML is not installed, you can download it\n",
-         "from https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
+         "If Microsoft R Server with Microsoft ML is not installed, you can\n",
+         "download it from:\n",
+         "https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
 }
 
 #-----------------------------------------------------------------------
@@ -47,9 +48,7 @@ dataDir <- file.path("Data")
 if (!file.exists(file.path(dataDir, "MNIST.xdf"))) {
     stop("The data files needed for running this script cannot be found.\n",
          "You may need to set R's working directory to the location of the Data\n",
-         "directory. If Microsoft R Server with MML is not installed, you can\n",
-         "download it from\n",
-         "https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
+         "directory.\n")
 }
 # The imported MNIST dataset.
 dataset <- RxXdfData(file.path(dataDir, "MNIST.xdf"))
@@ -80,15 +79,15 @@ model <- formula(paste("Label ~", paste(xVars, collapse = " + ")))
 #-----------------------------------------------------------------------
 # 5. Fit the model using different learners.
 #-----------------------------------------------------------------------
-# Fit the model with logisticRegression. This finds the variable weights that
-# are most useful for classifying images. The logisticRegression learner
+# Fit the model with rxLogisticRegression. This finds the variable weights that
+# are most useful for classifying images. The rxLogisticRegression learner
 # automatically adjusts the weights to select those variables that are
 # most useful for classification. Unlike the convolutional network
 # approaches shown below, this logistic regression does not take into
 # account the spatial relationships between the pixels of the images.
-logisticRegressionFit <- logisticRegression(model, dataTrain, type = "multiClass")
+rxLogisticRegressionFit <- rxLogisticRegression(model, dataTrain, type = "multiClass")
 #-----------------------------------------------------------------------
-# Fit the model with neuralNet. This learns which neural network
+# Fit the model with rxNeuralNet. This learns which neural network
 # weights are needed to classify images as digits based on the pixel
 # value variables. The 'numIterations' input says how many times the
 # learners goes over the training data to find the correct weights.
@@ -102,16 +101,16 @@ logisticRegressionFit <- logisticRegression(model, dataTrain, type = "multiClass
 # 2. What are their differences in accuracy, precision, and recall?
 #-----------------------------------------------------------------------
 # The definition of the convolutional neural network.
-neuralNetFile <- file.path(dataDir, "MNIST.nn")
-neuralNet <- readChar(neuralNetFile, file.info(neuralNetFile)$size)
-neuralNetFit <- neuralNet(model, data = dataTrain,
+rxNeuralNetFile <- file.path(dataDir, "MNIST.nn")
+rxNeuralNet <- readChar(rxNeuralNetFile, file.info(rxNeuralNetFile)$size)
+rxNeuralNetFit <- rxNeuralNet(model, data = dataTrain,
                               type = "multiClass",
                               numIterations = 9,
-                              netDefinition = neuralNet,
+                              netDefinition = rxNeuralNet,
                               initWtsDiameter = 1.0,
                               normalize = "No")
 #-----------------------------------------------------------------------
-# Fit the model with neuralNet. This network is an approximation of
+# Fit the model with rxNeuralNet. This network is an approximation of
 # LeNet-5, Yann LeCun's 1998 convolutional network. This network has
 # seven layers, and alternates convolutions and subsampling. For more
 # information, see http://yann.lecun.com/exdb/publis/pdf/lecun-98.pdf
@@ -122,7 +121,7 @@ neuralNetFit <- neuralNet(model, data = dataTrain,
 # The definition of the LeCun-5 neural network.
 leCunNetFile <- file.path(dataDir, "LeCun5.nn")
 leCun5Net <- readChar(leCunNetFile, file.info(leCunNetFile)$size)
-leCun5NetFit <- neuralNet(model, data = dataTrain,
+leCun5NetFit <- rxNeuralNet(model, data = dataTrain,
                             type = "multiClass",
                             numIterations = 9,
                             netDefinition = leCun5Net,
@@ -133,17 +132,17 @@ leCun5NetFit <- neuralNet(model, data = dataTrain,
 # 6. Score the held-aside test data with the fit models.
 #-----------------------------------------------------------------------
 # The scores are each record's probability of being one of the ten
-# digits. The predicted label correspond to the digit with the highest
-# score. We combine each learner's predictions and the label into one
+# digits. The rxPredicted label correspond to the digit with the highest
+# score. We combine each learner's rxPredictions and the label into one
 # Xdf.
-logisticRegressionScores <-
-    predict(logisticRegressionFit, dataTest, extraVarsToWrite = "Label",
+rxLogisticRegressionScores <-
+    rxPredict(rxLogisticRegressionFit, dataTest, extraVarsToWrite = "Label",
               outData = tempfile(fileext = ".xdf"))
-neuralNetScores <-
-    predict(neuralNetFit, dataTest, extraVarsToWrite = "Label",
+rxNeuralNetScores <-
+    rxPredict(rxNeuralNetFit, dataTest, extraVarsToWrite = "Label",
               outData = tempfile(fileext = ".xdf"))
 leCun5NetScores <-
-    predict(leCun5NetFit, dataTest, extraVarsToWrite = "Label",
+    rxPredict(leCun5NetFit, dataTest, extraVarsToWrite = "Label",
               outData = tempfile(fileext = ".xdf"))
 
 #-----------------------------------------------------------------------
@@ -155,22 +154,22 @@ leCun5NetScores <-
 # the top-left corner to the bottom-right corner, count the number of
 # images that were correctly classified. The row sums are the counts
 # of the number of times each digit was in an image. The column sums
-# are the counts of the number of times each digit was predicted.
+# are the counts of the number of times each digit was rxPredicted.
 confusionFormula <- ~ Label:PredictedLabel
-logisticRegressionConfusion <-
-    rxCrossTabs(confusionFormula, logisticRegressionScores, returnXtabs = TRUE)
-neuralNetConfusion <-
-    rxCrossTabs(confusionFormula, neuralNetScores, returnXtabs = TRUE)
+rxLogisticRegressionConfusion <-
+    rxCrossTabs(confusionFormula, rxLogisticRegressionScores, returnXtabs = TRUE)
+rxNeuralNetConfusion <-
+    rxCrossTabs(confusionFormula, rxNeuralNetScores, returnXtabs = TRUE)
 leCun5NetConfusion <-
     rxCrossTabs(confusionFormula, leCun5NetScores, returnXtabs = TRUE)
 # The accuracy of the fit models. This is the ratio of the number of
 # correct classification of images as having a digit to the total
 # number of images that were classified.
 accuracy <-
-    cbind(logisticRegression = sum(diag(logisticRegressionConfusion)) /
-                             sum(logisticRegressionConfusion),
-          neuralNet = sum(diag(neuralNetConfusion)) /
-                             sum(neuralNetConfusion),
+    cbind(rxLogisticRegression = sum(diag(rxLogisticRegressionConfusion)) /
+                             sum(rxLogisticRegressionConfusion),
+          rxNeuralNet = sum(diag(rxNeuralNetConfusion)) /
+                             sum(rxNeuralNetConfusion),
           leCun5Net = sum(diag(leCun5NetConfusion)) /
                              sum(leCun5NetConfusion))
 rownames(accuracy) <- "Accuracy"
@@ -180,18 +179,18 @@ names(dimnames(accuracy)) <- c("", "Learner")
 # images that were correct. In contrast, the recall is the fraction of
 # images of that digit that were correct assigned that digit.
 precision <-
-    rbind(logisticRegression = diag(logisticRegressionConfusion) /
-                             colSums(logisticRegressionConfusion),
-          neuralNet = diag(neuralNetConfusion) /
-                             colSums(neuralNetConfusion),
+    rbind(rxLogisticRegression = diag(rxLogisticRegressionConfusion) /
+                             colSums(rxLogisticRegressionConfusion),
+          rxNeuralNet = diag(rxNeuralNetConfusion) /
+                             colSums(rxNeuralNetConfusion),
           leCun5Net = diag(leCun5NetConfusion) /
                              colSums(leCun5NetConfusion))
 names(dimnames(precision)) <- c("Learner", "Digit")
 recall <-
-    rbind(logisticRegression = diag(logisticRegressionConfusion) /
-                             rowSums(logisticRegressionConfusion),
-          neuralNet = diag(neuralNetConfusion) /
-                             rowSums(neuralNetConfusion),
+    rbind(rxLogisticRegression = diag(rxLogisticRegressionConfusion) /
+                             rowSums(rxLogisticRegressionConfusion),
+          rxNeuralNet = diag(rxNeuralNetConfusion) /
+                             rowSums(rxNeuralNetConfusion),
           leCun5Net = diag(leCun5NetConfusion) /
                             rowSums(leCun5NetConfusion))
 names(dimnames(recall)) <- c("Learner", "Digit")

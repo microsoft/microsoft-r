@@ -1,5 +1,5 @@
 #12345678901234567890123456789012345678901234567890123456789012345678901
-# Compare predicting customer churn using different MML learners.
+# Compare predicting customer churn using different Microsoft ML learners.
 
 # A end-to-end example of finding the best model for predicting churn in
 # the retail arena.
@@ -25,12 +25,13 @@ if (!suppressPackageStartupMessages(require("MicrosoftML",
                                             quietly = TRUE,
                                             warn.conflicts = FALSE))) {
     stop("The MicrosoftML package does not seem to be installed, so this\n",
-         "script cannot be run. If Microsoft R Server with MML is installed,\n",
+         "script cannot be run. If Microsoft R Server with Microsoft ML is installed,\n",
          "you may need to switch the R engine option. In R Tools for Visual\n",
          "Studio, this option is under:\n",
          "\tR Tools -> Options -> R Engine.\n",
-         "If Microsoft R Server with MML is not installed, you can download it\n",
-         "from https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
+         "If Microsoft R Server with Microsoft ML is not installed, you can\n",
+         "download it from:\n",
+         "https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
 }
 
 #-----------------------------------------------------------------------
@@ -45,9 +46,7 @@ if (!all(file.exists(file.path(dataDir,
           #12345678901234567890123456789012345678901234567890123456789012345678901
     stop("The data files needed for running this script cannot be found.\n",
          "You may need to set R's working directory to the location of the Data\n",
-         "directory. If Microsoft R Server with MML is not installed, you can\n",
-         "download it from\n",
-         "https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
+         "directory.\n")
 }
 # The data chunk size.
 rowsPerBlock <- 1000000
@@ -84,7 +83,7 @@ dataActivity <-
 #-----------------------------------------------------------------------
 # The churn period is the next churnPeriod days. A customer has churned
 # if their activity drops below churnThreshold in the churn period. Then
-# the prediction of churn is made using statistics about customer
+# the rxPrediction of churn is made using statistics about customer
 # activity from before the churn period.
 churnThreshold <- 0
 churnPeriod <- as.difftime(21, units = "days")
@@ -298,59 +297,59 @@ model <- formula(paste("Label ~", paste(xVars, collapse = " + ")))
 #-----------------------------------------------------------------------
 # Fit the model with logistic regression. This finds the variable
 # weights that are most useful for predicting churning. The
-# logisticRegression learner automatically adjusts the weights to select
-# those variables that are most useful for making predictions.
-logisticRegressionFit <- logisticRegression(model, data = dataTrain)
+# rxLogisticRegression learner automatically adjusts the weights to select
+# those variables that are most useful for making rxPredictions.
+rxLogisticRegressionFit <- rxLogisticRegression(model, data = dataTrain)
 #-----------------------------------------------------------------------
 # Fit the model with linear regression. This finds the variable
 # weights that are most useful for predicting churning. The
-# fastLinear learner automatically adjusts the weights to select
-# those variables that are most useful for making predictions.
-fastLinearFit <- fastLinear(model, data = dataTrain)
+# rxFastLinear learner automatically adjusts the weights to select
+# those variables that are most useful for making rxPredictions.
+rxFastLinearFit <- rxFastLinear(model, data = dataTrain)
 #-----------------------------------------------------------------------
 # Fit the model with boosted trees. This finds the combinations of
 # variables and threshold values that are useful for predicting churning.
-# The fastTrees learner automatically builds a sequence of trees so that
+# The rxFastTrees learner automatically builds a sequence of trees so that
 # trees later in the sequence repair errors made by trees earlier in the
 # sequence.
-fastTreesFit <- fastTrees(model, data = dataTrain, randomSeed = 23648)
+rxFastTreesFit <- rxFastTrees(model, data = dataTrain, randomSeed = 23648)
 #-----------------------------------------------------------------------
 # Fit the model with random forest. This finds the combinations of
 # variables and threshold values that are useful for predicting churning.
-# The fastForest learner automatically builds a set of trees whose
-# combined predictions are better than the predictions of any one of the
+# The rxFastForest learner automatically builds a set of trees whose
+# combined rxPredictions are better than the rxPredictions of any one of the
 # trees.
-fastForestFit <- fastForest(model, data = dataTrain, randomSeed = 23648)
+rxFastForestFit <- rxFastForest(model, data = dataTrain, randomSeed = 23648)
 #-----------------------------------------------------------------------
 # Fit the model with neural net. This finds the variable weights that
 # are most useful for predicting churning. Neural net can excel when
 # dealing with non-linear relationships between the variables.
-neuralNetFit <- neuralNet(model, data = dataTrain)
+rxNeuralNetFit <- rxNeuralNet(model, data = dataTrain)
 
 #-----------------------------------------------------------------------
 # 9. Score the held-aside test data with the fit models.
 #-----------------------------------------------------------------------
 # The scores are each test record's probability of being a churner. This
-# combines each fit model's predictions and the label into one table
+# combines each fit model's rxPredictions and the label into one table
 # for side-by-side plotting and comparison.
 fitScores <-
-    predict(logisticRegressionFit, dataTest, suffix = ".logisticRegression",
+    rxPredict(rxLogisticRegressionFit, dataTest, suffix = ".rxLogisticRegression",
               extraVarsToWrite = names(dataTest),
               outData = tempfile(fileext = ".xdf"))
 fitScores <-
-    predict(fastLinearFit, fitScores, suffix = ".fastLinear",
+    rxPredict(rxFastLinearFit, fitScores, suffix = ".rxFastLinear",
               extraVarsToWrite = names(fitScores),
               outData = tempfile(fileext = ".xdf"))
 fitScores <-
-    predict(fastTreesFit, fitScores, suffix = ".fastTrees",
+    rxPredict(rxFastTreesFit, fitScores, suffix = ".rxFastTrees",
               extraVarsToWrite = names(fitScores),
               outData = tempfile(fileext = ".xdf"))
 fitScores <-
-    predict(fastForestFit, fitScores, suffix = ".fastForest",
+    rxPredict(rxFastForestFit, fitScores, suffix = ".rxFastForest",
               extraVarsToWrite = names(fitScores),
               outData = tempfile(fileext = ".xdf"))
 fitScores <-
-    predict(neuralNetFit, fitScores, suffix = ".neuralNet",
+    rxPredict(rxNeuralNetFit, fitScores, suffix = ".rxNeuralNet",
               extraVarsToWrite = names(fitScores),
               outData = tempfile(fileext = ".xdf"))
 
@@ -361,19 +360,19 @@ fitScores <-
 fitRoc <-
     rxRoc("Label",
           paste("Probability",
-                 c("logisticRegression", "fastLinear", "fastTrees",
-                   "fastForest", "neuralNet"),
+                 c("rxLogisticRegression", "rxFastLinear", "rxFastTrees",
+                   "rxFastForest", "rxNeuralNet"),
                  sep = "."),
           fitScores)
 # Plot the ROC curves and report their AUCs.
 plot(fitRoc)
 # Create a named list of the fit models.
 fitList <-
-    list(logisticRegression = logisticRegressionFit,
-         fastLinear = fastLinearFit,
-         fastTrees = fastTreesFit,
-         fastForest = fastForestFit,
-         neuralNet = neuralNetFit)
+    list(rxLogisticRegression = rxLogisticRegressionFit,
+         rxFastLinear = rxFastLinearFit,
+         rxFastTrees = rxFastTreesFit,
+         rxFastForest = rxFastForestFit,
+         rxNeuralNet = rxNeuralNetFit)
 # Compute the fit models's AUCs.
 fitAuc <- rxAuc(fitRoc)
 names(fitAuc) <- substring(names(fitAuc), nchar("Probability.") + 1)

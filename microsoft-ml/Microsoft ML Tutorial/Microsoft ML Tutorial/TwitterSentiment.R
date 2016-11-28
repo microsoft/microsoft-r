@@ -1,5 +1,5 @@
 #12345678901234567890123456789012345678901234567890123456789012345678901
-# Compare predicting sentiment in text using different MML learners.
+# Compare predicting sentiment in text using different Microsoft ML learners.
 
 # Contents
 # 1. Load packages.
@@ -17,12 +17,13 @@ if (!suppressPackageStartupMessages(require("MicrosoftML",
                                             quietly = TRUE,
                                             warn.conflicts = FALSE))) {
     stop("The MicrosoftML package does not seem to be installed, so this\n",
-         "script cannot be run. If Microsoft R Server with MML is installed,\n",
+         "script cannot be run. If Microsoft R Server with Microsoft ML is installed,\n",
          "you may need to switch the R engine option. In R Tools for Visual\n",
          "Studio, this option is under:\n",
          "\tR Tools -> Options -> R Engine.\n",
-         "If Microsoft R Server with MML is not installed, you can download it\n",
-         "from https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
+         "If Microsoft R Server with Microsoft ML is not installed, you can\n",
+         "download it from:\n",
+         "https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
 }
 
 #-----------------------------------------------------------------------
@@ -34,22 +35,19 @@ dataDir <- file.path("Data")
 if (!file.exists(file.path(dataDir, "HappyOrSad.csv"))) {
     stop("The data files needed for running this script cannot be found.\n",
          "You may need to set R's working directory to the location of the Data\n",
-         "directory. If Microsoft R Server with MML is not installed, you can\n",
-         "download it from\n",
-         "https://microsoft.sharepoint.com/teams/TLC/SitePages/MicrosoftML.aspx\n")
+         "directory.")
 }
 # The data chunk size.
 rowsPerBlock <- 1000000
 # Import the data. Define Label.
 dataset <-
-    rxImport(read.csv(file.path(dataDir, "HappyOrSad.csv"),
-                      stringsAsFactors = FALSE),
-             varsToDrop = "id_nfpu",
+    rxImport(file.path(dataDir, "HappyOrSad.csv"),
              colInfo = list(features = list(type = "character",
                                             newName = "Text"),
                             label = list(type = "character",
                                          newName = "sentiment")),
              transforms = list(Label = sentiment == "happiness"),
+             quotedDelimiters = TRUE,
              outFile = tempfile(fileext = ".xdf"),
              rowsPerRead = rowsPerBlock)
 
@@ -94,43 +92,43 @@ model <- formula(paste("Label ~ Features"))
 #-----------------------------------------------------------------------
 # Fit the model with logistic regression. This finds the variable
 # weights that are most useful for predicting sentiment. The
-# logisticRegression learner automatically adjusts the weights to select
-# those variables that are most useful for making predictions.
-logisticRegressionFit <-
-    logisticRegression(model, data = dataTrain,
-                  mlTransforms =
-                    list(featurizeText(vars = c(Features = "Text")),
-                         selectFeatures(model, mutualInformation())))
+# rxLogisticRegression learner automatically adjusts the weights to select
+# those variables that are most useful for making rxPredictions.
+rxLogisticRegressionFit <-
+    rxLogisticRegression(model, data = dataTrain,
+                         mlTransforms =
+                            list(featurizeText(vars = c(Features = "Text")),
+                                 selectFeatures(model, mutualInformation())))
 #-----------------------------------------------------------------------
 # Fit the model with linear regression. This finds the variable
 # weights that are most useful for predicting sentiment. The
-# fastLinear learner automatically adjusts the weights to select
-# those variables that are most useful for making predictions.
-fastLinearFit <-
-    fastLinear(model, data = dataTrain,
-                  mlTransforms =
+# rxFastLinear learner automatically adjusts the weights to select
+# those variables that are most useful for making rxPredictions.
+rxFastLinearFit <-
+    rxFastLinear(model, data = dataTrain,
+                 mlTransforms =
                     list(featurizeText(vars = c(Features = "Text")),
                          selectFeatures(model, mutualInformation())))
 #-----------------------------------------------------------------------
 # Fit the model with boosted trees. This finds the combinations of
 # variables and threshold values that are useful for predicting sentiment.
-# The fastTrees learner automatically builds a sequence of trees so that
+# The rxFastTrees learner automatically builds a sequence of trees so that
 # trees later in the sequence repair errors made by trees earlier in the
 # sequence.
-fastTreesFit <-
-    fastTrees(model, data = dataTrain,
-               mlTransforms =
+rxFastTreesFit <-
+    rxFastTrees(model, data = dataTrain,
+                mlTransforms =
                     list(featurizeText(vars = c(Features = "Text")),
                          selectFeatures(model, mutualInformation())),
-               randomSeed = 23648)
+                randomSeed = 23648)
 #-----------------------------------------------------------------------
 # Fit the model with random forest. This finds the combinations of
 # variables and threshold values that are useful for predicting sentiment.
-# The fastForest learner automatically builds a set of trees whose
-# combined predictions are better than the predictions of any one of the
+# The rxFastForest learner automatically builds a set of trees whose
+# combined rxPredictions are better than the rxPredictions of any one of the
 # trees.
-fastForestFit <-
-    fastForest(model, data = dataTrain,
+rxFastForestFit <-
+    rxFastForest(model, data = dataTrain,
                  mlTransforms =
                     list(featurizeText(vars = c(Features = "Text")),
                          selectFeatures(model, mutualInformation())),
@@ -139,8 +137,8 @@ fastForestFit <-
 # Fit the model with neural net. This finds the variable weights that
 # are most useful for predicting sentiment. Neural net can excel when
 # dealing with non-linear relationships between the variables.
-neuralNetFit <-
-    neuralNet(model, data = dataTrain,
+rxNeuralNetFit <-
+    rxNeuralNet(model, data = dataTrain,
                 mlTransforms =
                     list(featurizeText(vars = c(Features = "Text")),
                          selectFeatures(model, mutualInformation())))
@@ -149,26 +147,26 @@ neuralNetFit <-
 # 6. Score the held-aside test data with the fit models.
 #-----------------------------------------------------------------------
 # The scores are each test record's probability of being a sentiment.
-# This combines each fit model's predictions and the label into one
+# This combines each fit model's rxPredictions and the label into one
 # table for side-by-side plotting and comparison.
 fitScores <-
-    predict(logisticRegressionFit, dataTest, suffix = ".logisticRegression",
+    rxPredict(rxLogisticRegressionFit, dataTest, suffix = ".rxLogisticRegression",
               extraVarsToWrite = names(dataTest),
               outData = tempfile(fileext = ".xdf"))
 fitScores <-
-    predict(fastLinearFit, fitScores, suffix = ".fastLinear",
+    rxPredict(rxFastLinearFit, fitScores, suffix = ".rxFastLinear",
               extraVarsToWrite = names(fitScores),
               outData = tempfile(fileext = ".xdf"))
 fitScores <-
-    predict(fastTreesFit, fitScores, suffix = ".fastTrees",
+    rxPredict(rxFastTreesFit, fitScores, suffix = ".rxFastTrees",
               extraVarsToWrite = names(fitScores),
               outData = tempfile(fileext = ".xdf"))
 fitScores <-
-    predict(fastForestFit, fitScores, suffix = ".fastForest",
+    rxPredict(rxFastForestFit, fitScores, suffix = ".rxFastForest",
               extraVarsToWrite = names(fitScores),
               outData = tempfile(fileext = ".xdf"))
 fitScores <-
-    predict(neuralNetFit, fitScores, suffix = ".neuralNet",
+    rxPredict(rxNeuralNetFit, fitScores, suffix = ".rxNeuralNet",
               extraVarsToWrite = names(fitScores),
               outData = tempfile(fileext = ".xdf"))
 
@@ -179,19 +177,19 @@ fitScores <-
 fitRoc <-
     rxRoc("Label",
           paste("Probability",
-                 c("logisticRegression", "fastLinear", "fastTrees",
-                   "fastForest", "neuralNet"),
+                 c("rxLogisticRegression", "rxFastLinear", "rxFastTrees",
+                   "rxFastForest", "rxNeuralNet"),
                  sep = "."),
           fitScores)
 # Plot the ROC curves and report their AUCs.
 plot(fitRoc)
 # Create a named list of the fit models.
 fitList <-
-    list(logisticRegression = logisticRegressionFit,
-         fastLinear = fastLinearFit,
-         fastTrees = fastTreesFit,
-         fastForest = fastForestFit,
-         neuralNet = neuralNetFit)
+    list(rxLogisticRegression = rxLogisticRegressionFit,
+         rxFastLinear = rxFastLinearFit,
+         rxFastTrees = rxFastTreesFit,
+         rxFastForest = rxFastForestFit,
+         rxNeuralNet = rxNeuralNetFit)
 # Compute the fit models's AUCs.
 fitAuc <- rxAuc(fitRoc)
 names(fitAuc) <- substring(names(fitAuc), nchar("Probability.") + 1)
