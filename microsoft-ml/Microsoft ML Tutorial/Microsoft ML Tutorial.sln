@@ -5,6 +5,13 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{DA7A21FA-8162-4350-AD77-A8D1B671F3ED}") = "Microsoft ML Tutorial", "Microsoft ML Tutorial\Microsoft ML Tutorial.rxproj", "{CCE076FE-FE7F-4A97-9627-839175A5F208}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{7A32A4E5-8DA3-4E6A-8B9B-0AFBB3818738}"
+	ProjectSection(SolutionItems) = preProject
+		Documents\Microsoft-ML-Tutorial.docx = Documents\Microsoft-ML-Tutorial.docx
+		Documents\Microsoft-ML-Tutorial.md = Documents\Microsoft-ML-Tutorial.md
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
