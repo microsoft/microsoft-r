@@ -241,3 +241,6 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 *.Rhistory
+
+# Jupyter notebooks
+.ipynb_checkpoints/

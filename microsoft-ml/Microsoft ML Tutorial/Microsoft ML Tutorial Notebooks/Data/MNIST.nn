@@ -1,0 +1,24 @@
+const { T = true; F = false; }
+
+input Picture [28, 28];
+
+hidden Convolve1 [ 5, 12, 12]
+  from Picture convolve {
+    InputShape  = [28, 28];
+    KernelShape = [ 5,  5];
+    Stride      = [ 2,  2];
+    MapCount    = 5;
+  }
+
+hidden Convolve2 [50,  4,  4]
+  from Convolve1 convolve {
+    InputShape  = [ 5, 12, 12];
+    KernelShape = [ 1,  5,  5];
+    Stride      = [ 1,  2,  2];
+    Sharing     = [ F,  T,  T];
+    MapCount    = 10;
+  }
+
+hidden Full3 [100] from Convolve2 all;
+
+output Result [10] from Full3 all;

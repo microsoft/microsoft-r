@@ -1,0 +1,45 @@
+const { T = true; F = false; }
+
+input Picture [28, 28];
+
+hidden Convolve1 [ 6, 28, 28]
+  from Picture convolve {
+    Padding     = T;
+    InputShape  = [28, 28];
+    KernelShape = [ 5,  5];
+    MapCount    = 6;
+  }
+
+hidden Subsample2 [ 6, 14, 14] linear
+  from Convolve1 convolve {
+    InputShape  = [ 6, 28, 28];
+	KernelShape = [ 1,  2,  2];
+	Stride      = [ 1,  2,  2];
+    Sharing     = [ F,  T,  T];
+  }
+
+hidden Convolve3 [16, 10, 10]
+  from Subsample2 convolve {
+    InputShape  = [ 6, 14, 14];
+	KernelShape = [ 6,  5,  5];
+	MapCount    = 16;
+  }
+
+hidden Subsample4 [16,  5,  5] linear
+  from Convolve3 convolve {
+    InputShape  = [16, 10, 10];
+	KernelShape = [ 1,  2,  2];
+	Stride      = [ 1,  2,  2];
+    Sharing     = [ F,  T,  T];
+  }
+
+hidden Convolve5 [120]
+  from Subsample4 convolve {
+    InputShape  = [16,  5,  5];
+    KernelShape = [16,  5,  5];
+    MapCount    = 120;
+  }
+
+hidden Full6 [84] from Convolve5 all;
+
+output Result [10] softmax from Full6 all;

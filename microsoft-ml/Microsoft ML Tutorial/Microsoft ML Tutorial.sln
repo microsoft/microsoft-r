@@ -12,6 +12,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft ML Tutorial Notebooks", "Microsoft ML Tutorial Notebooks", "{27BA69BA-C4AC-470E-8BC2-67CE429FFDA3}"
+	ProjectSection(SolutionItems) = preProject
+		Microsoft ML Tutorial Notebooks\Microsoft ML MNIST Deep Learning Tutorial.ipynb = Microsoft ML Tutorial Notebooks\Microsoft ML MNIST Deep Learning Tutorial.ipynb
+		Microsoft ML Tutorial Notebooks\Microsoft ML Retail Churn Tutorial.ipynb = Microsoft ML Tutorial Notebooks\Microsoft ML Retail Churn Tutorial.ipynb
+		Microsoft ML Tutorial Notebooks\Microsoft ML Twitter Sentiment Analysis Tutorial.ipynb = Microsoft ML Tutorial Notebooks\Microsoft ML Twitter Sentiment Analysis Tutorial.ipynb
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{D97B0B41-09C2-4110-9C24-06A1AF16A2BE}"
+	ProjectSection(SolutionItems) = preProject
+		Microsoft ML Tutorial Notebooks\Data\HappyOrSad.csv = Microsoft ML Tutorial Notebooks\Data\HappyOrSad.csv
+		Microsoft ML Tutorial Notebooks\Data\LeCun5.nn = Microsoft ML Tutorial Notebooks\Data\LeCun5.nn
+		Microsoft ML Tutorial Notebooks\Data\MNIST.nn = Microsoft ML Tutorial Notebooks\Data\MNIST.nn
+		Microsoft ML Tutorial Notebooks\Data\mnist.xdf = Microsoft ML Tutorial Notebooks\Data\mnist.xdf
+		Microsoft ML Tutorial Notebooks\Data\Retail Churn Activity.csv = Microsoft ML Tutorial Notebooks\Data\Retail Churn Activity.csv
+		Microsoft ML Tutorial Notebooks\Data\Retail Churn Users.csv = Microsoft ML Tutorial Notebooks\Data\Retail Churn Users.csv
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,5 +42,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D97B0B41-09C2-4110-9C24-06A1AF16A2BE} = {27BA69BA-C4AC-470E-8BC2-67CE429FFDA3}
 	EndGlobalSection
 EndGlobal
