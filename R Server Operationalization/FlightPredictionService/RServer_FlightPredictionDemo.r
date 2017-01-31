@@ -27,13 +27,14 @@ flightPrediction(testData)
 ##################################################################
 
 remoteLoginAAD(
-     "https://deployr-dogfood.mrs.microsoft-tst.com",
-     authuri = "https://login.windows.net",
-     tenantid = "microsoft.com",
-     clientid = "3955bff3-2ec2-4975-9068-28acf86a3b6f",
-     resource = "b3b96d00-1c06-4b9d-a94f-06ecb71822b0",
-     session = FALSE
-   )
+	"YOUR AAD Server Address ",
+	authuri = "Auth URI",
+	tenantid = "Tenant Id",
+	clientid = "Client Id",
+	resource = "Resource Id",
+	session = FALSE
+)
+
 
 # Use this if you are not using AAD. This will show a prompt to enter user and password
 # remoteLogin(endpoint, session = FALSE, diff = FALSE)
