@@ -20,7 +20,7 @@ namespace FlightService
         {
             // Create a new `client` pointing to the R Server's endpoint
             var flightService = new Flight.FlightPredictionService(
-                new Uri("https://deployr-dogfood.mrs.microsoft-tst.com"));
+                new Uri("YOUR SERVER ADDRESS"));
 
             // Add API key to the `client` given to us from Azure AD
             AddApiKeyAuthorization(flightService);
@@ -43,9 +43,9 @@ namespace FlightService
         /// <param name="flightService"></param>
         private static void AddApiKeyAuthorization(FlightPredictionService flightService)
         {
-            const string authority = "https://login.windows.net";
-            const string clientId = "3955bff3-2ec2-4975-9068-28acf86a3b6f";
-            const string clientKey = "b3b96d00-1c06-4b9d-a94f-06ecb71822b0";
+            const string authority = "Authority server";
+            const string clientId = "Client ID";
+            const string clientKey = "Client Key";
 
             var authenticationContext = new AuthenticationContext(authority);
             var authenticationResult = authenticationContext.AcquireTokenAsync(
