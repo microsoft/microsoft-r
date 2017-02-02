@@ -5,7 +5,7 @@ Flight Prediction Service
 1. RServer_FlightPredictionDemo.R contains the R code for Flight Predict Service.
 1. Azure Active Directory Authentication, Modify RServer_FlightPredictionDemo.R code section
 	2. Modify remoteLoginAAD(
-    	      "Your Server Address ",<br />
+    	      "Your Server Address",<br />
 	       authuri = "Auth URI",<br />
 	       tenantid = "Tenant Id",<br />
 	       clientid = "Client Id",<br />
@@ -22,7 +22,7 @@ Flight Prediction Service
 1. Sample VS 2015 Console Application shows how to consume FlightPredict service
 1. Open Project in VS 2015
 1. Modify program.cs file
-	2. Modify "YOUR SERVER ADDRESS" <br />
+	2. Modify "Your Server Address" <br />
 	3. If using Azure Active Directory Authentication <br />
 	   string authority = "Authority server" <br />
            string clientId = "Client ID" <br />
