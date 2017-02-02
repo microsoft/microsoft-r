@@ -38,7 +38,7 @@ remoteLoginAAD(
 
 # Use this if you are not using AAD. This will show a prompt to enter user and password
 #endpoint <- "Your Server Address"
-# remoteLogin(endpoint, session = FALSE, diff = FALSE)
+#remoteLogin(endpoint, session = FALSE, diff = FALSE)
 
 ##################################################################
 #   Step 3: Publish as a web service                             #

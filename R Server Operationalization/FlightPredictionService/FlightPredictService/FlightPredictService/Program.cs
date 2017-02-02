@@ -18,7 +18,7 @@ namespace FlightService
         {
             // Create a new `client` pointing to the R Server's endpoint
             var flightService = new FlightPredictionService(
-                new Uri("YOUR SERVER"));
+                new Uri("Your Server Address"));
 
             // Add API key to the `client` given to us from Azure AD
             //AddApiKeyAuthorization(flightService);
