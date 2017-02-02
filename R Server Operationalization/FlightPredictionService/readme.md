@@ -1,7 +1,7 @@
 Flight Prediction Service
 =========================
 
-## Operationalize
+## Operationalize - Publish FlightPredictService
 1. RServer_FlightPredictionDemo.r contains the R code for Flight Predict Service.
 1. Modify RServer_FlightPredictionDemo.r code and Add Azure Active Directory details if you want to use AAD for Authentication
 1. Modify RServer_FlightPredictionDemo.r code and Add R Server EndPoint.
