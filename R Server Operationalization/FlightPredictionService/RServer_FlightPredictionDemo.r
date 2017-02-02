@@ -27,7 +27,7 @@ flightPrediction(testData)
 ##################################################################
 
 remoteLoginAAD(
-	"YOUR AAD Server Address ",
+	"YOUR Server Address ",
 	authuri = "Auth URI",
 	tenantid = "Tenant Id",
 	clientid = "Client Id",
@@ -37,6 +37,7 @@ remoteLoginAAD(
 
 
 # Use this if you are not using AAD. This will show a prompt to enter user and password
+#endpoint <- "Your Server Address"
 # remoteLogin(endpoint, session = FALSE, diff = FALSE)
 
 ##################################################################
@@ -75,11 +76,7 @@ cat(swagger, file = "swagger.json", append = FALSE)
 services <- listServices()
 services
 
-# Get the service
-FlightPredictionService <- services[[4]]
-FlightPredictionService
-
-modelApi <- getService(FlightPredictionService$name, FlightPredictionService$version)
+modelApi <- getService("FlightPredictionService", "v3.5.5")
 
 # Consume the service
 newFlightData <- readRDS('scoreDF.rds')
