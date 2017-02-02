@@ -3,16 +3,19 @@ Flight Prediction Service
 
 ## Operationalize - Publish FlightPredictService
 1. RServer_FlightPredictionDemo.R contains the R code for Flight Predict Service.
-1. Modify RServer_FlightPredictionDemo.R code and Add Azure Active Directory details if you want to use AAD for Authentication
-    2. Modify remoteLoginAAD(
-	      "YOUR Server Address ",
-	      authuri = "Auth URI",
-	      tenantid = "Tenant Id",
-	      clientid = "Client Id",
-	      resource = "Resource Id",
-	      session = FALSE
-      )
-1. Modify RServer_FlightPredictionDemo.R code and Add R Server EndPoint.
+1. Azure Active Directory Authentication, Modify RServer_FlightPredictionDemo.R code section
+	2. Modify remoteLoginAAD(
+    	      "Your Server Address ",<br />
+	       authuri = "Auth URI",<br />
+	       tenantid = "Tenant Id",<br />
+	       clientid = "Client Id",<br />
+	       resource = "Resource Id",<br />
+	       session = FALSE<br />
+	       )<br />
+1. WebNode Login, Modify RServer_FlightPredictionDemo.R code.
+	2. Use remoteLogin functionality  <br />
+		endpoint <- "Your Server Address" <br />
+		remoteLogin(endpoint, session = FALSE, diff = FALSE) <br />
 1. Execute the R script to publish the FlightPredict as a service.
 
 ## Consume Service
