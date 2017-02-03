@@ -2,7 +2,7 @@ Loan Scoring Service
 ====================
 Demo of Loan Scoring App - Includes models from sample loan scoring data base and a Visual studio solution
 
-## STEPS to use the code sample - 
+## Steps to use the code sample - 
 
 1. Configure one box operationalization set up of R Server using the instructions documented at https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial. 
 
