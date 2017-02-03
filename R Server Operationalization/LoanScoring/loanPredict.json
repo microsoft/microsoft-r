@@ -1,0 +1,637 @@
+{
+                "swagger": "2.0",
+                "info": {
+                    "description": "",
+                    "title": "loanPredictService1484942117",
+                    "version": "v1.0.0"
+                },
+                "host": "40.86.94.151:12800",
+                "schemes": [
+                    "http",
+                    "https"
+                ],
+                "securityDefinitions": {
+                    "Bearer": {
+                        "type": "apiKey",
+                        "name": "Authorization",
+                        "in": "header"
+                    }
+                },
+                "tags": [
+                    {
+                        "name": "loanPredictService1484942117",
+                        "description": ""
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "paths": {
+                    "/login": {
+                        "post": {
+                            "operationId": "login",
+                            "summary": "Logs the user in",
+                            "parameters": [
+                                {
+                                    "name": "loginRequest",
+                                    "in": "body",
+                                    "required": true,
+                                    "schema": {
+                                        "$ref": "#/definitions/LoginRequest"
+                                    }
+                                }
+                            ],
+                            "tags": [
+                                "User"
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "Login successful",
+                                    "schema": {
+                                        "$ref": "#/definitions/AccessTokenResponse"
+                                    }
+                                },
+                                "default": {
+                                    "description": "Error \n * 401 - Invalid Password",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/login/refreshToken": {
+                        "post": {
+                            "operationId": "renewToken",
+                            "summary": "The user renews access token and refresh token",
+                            "parameters": [
+                                {
+                                    "name": "renewTokenRequest",
+                                    "in": "body",
+                                    "required": true,
+                                    "schema": {
+                                        "$ref": "#/definitions/RenewTokenRequest"
+                                    }
+                                }
+                            ],
+                            "tags": [
+                                "User"
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "Access token and refresh token updated successfully",
+                                    "schema": {
+                                        "$ref": "#/definitions/AccessTokenResponse"
+                                    }
+                                },
+                                "default": {
+                                    "description": "Error \n * 401 - Invalid or expired refresh token",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/login/refreshToken/{refreshToken}": {
+                        "delete": {
+                            "operationId": "revokeRefreshToken",
+                            "summary": "The user revokes a refresh token",
+                            "parameters": [
+                                {
+                                    "name": "refreshToken",
+                                    "in": "path",
+                                    "description": "The refresh token to be revoked",
+                                    "required": true,
+                                    "type": "string"
+                                }
+                            ],
+                            "tags": [
+                                "User"
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "Refresh token updated successfully",
+                                    "schema": {
+                                        "$ref": "#/definitions/AccessTokenResponse"
+                                    }
+                                },
+                                "default": {
+                                    "description": "Error \n * 401 - Invalid or expired refresh token",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/api/loanPredictService1484942117/v1.0.0": {
+                        "post": {
+                            "security": [
+                                {
+                                    "Bearer": []
+                                }
+                            ],
+                            "tags": [
+                                "loanPredictService1484942117"
+                            ],
+                            "description": "Consume the loanPredictService1484942117 web service.",
+                            "operationId": "loanPredictService",
+                            "parameters": [
+                    {
+                        "name": "WebServiceParameters",
+                        "in": "body",
+                        "required": true,
+                        "description": "Input parameters to the web service.",
+                        "schema": {
+                            "$ref": "#/definitions/InputParameters"
+                        }
+                    }
+                ],
+                            "responses": {
+                                "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "$ref": "#/definitions/WebServiceResult"
+                                    }
+                                },
+                                "400": {
+                                    "description": "Bad Request."
+                                },
+                                "500": {
+                                    "description": "Internal Server Error."
+                                },
+                                "default": {
+                                    "description": "Unexpected error.",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/api/loanPredictService1484942117/v1.0.0/batch": {
+                        "post": {
+                            "security": [
+                                {
+                                    "Bearer": []
+                                }
+                            ],
+                            "tags": [
+                                "loanPredictService1484942117"
+                            ],
+                            "description": "Consume the loanPredictService1484942117 web service asynchronously.",
+                            "operationId": "StartBatchExecution",
+                            "parameters": [
+                    {
+                        "name": "BatchWebServiceParameters",
+                        "in": "body",
+                        "required": true,
+                        "description": "Input parameters to the web service.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/InputParameters"
+                            }
+                        }
+                    },
+                    {
+                        "name": "parallelCount",
+                        "in": "query",
+                        "description": "Number of threads used to process entries in the batch. Default value is 10. Please make sure not to use too high of a number because it might negatively impact performance.",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                            "responses": {
+                                "202": {
+                                    "description": "Accepted",
+                                    "schema": {
+                                        "$ref": "#/definitions/StartBatchExecutionResponse"
+                                    }
+                                },
+                                "400": {
+                                    "description": "Bad Request."
+                                },
+                                "500": {
+                                    "description": "Internal Server Error."
+                                },
+                                "default": {
+                                    "description": "Unexpected error.",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        },
+                        "get": {
+                            "security": [
+                                {
+                                    "Bearer": []
+                                }
+                            ],
+                            "tags": [
+                                "loanPredictService1484942117"
+                            ],
+                            "summary": "Gets all batch executions for loanPredictService1484942117.",
+                            "operationId": "GetBatchExecutions",
+                            "consumes": [
+                                "application/json"
+                            ],
+                            "produces": [
+                                "application/json"
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "default": {
+                                    "description": "Error \n * 404 - Web service not found \n * 400 - Bad request",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/api/loanPredictService1484942117/v1.0.0/batch/{executionId}": {
+                        "get": {
+                            "security": [
+                                {
+                                    "Bearer": []
+                                }
+                            ],
+                            "tags": [
+                                "loanPredictService1484942117"
+                            ],
+                            "summary": "Gets all batch executions for loanPredictService1484942117.",
+                            "operationId": "GetBatchExecutionStatus",
+                            "consumes": [
+                                "application/json"
+                            ],
+                            "produces": [
+                                "application/json"
+                            ],
+                            "parameters": [
+                                {
+                                    "name": "executionId",
+                                    "in": "path",
+                                    "description": "Execution id of the execution",
+                                    "required": true,
+                                    "type": "string"
+                                },
+                                {
+                                    "name": "showPartialResults",
+                                    "in": "query",
+                                    "description": "Returns the already processed results of the batch execution even if it hasn't been fully completed.",
+                                    "required": false,
+                                    "type": "boolean"
+                                }
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "$ref": "#/definitions/BatchWebServiceResult"
+                                    }
+                                },
+                                "default": {
+                                    "description": "Error \n * 404 - Web service not found \n * 404 - Execution not found \n * 400 - Bad request",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        },
+                        "delete": {
+                            "security": [
+                                {
+                                    "Bearer": []
+                                }
+                            ],
+                            "tags": [
+                                "loanPredictService1484942117"
+                            ],
+                            "summary": "Cancels and deletes all batch executions for loanPredictService1484942117.",
+                            "operationId": "CancelAndDeleteBatchExecution",
+                            "consumes": [
+                                "application/json"
+                            ],
+                            "produces": [
+                                "application/json"
+                            ],
+                            "parameters": [
+                                {
+                                    "name": "executionId",
+                                    "in": "path",
+                                    "description": "Execution id of the execution.",
+                                    "required": true,
+                                    "type": "string"
+                                }
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "default": {
+                                    "description": "Error \n * 404 - Web service not found \n * 404 - Execution not found \n * 400 - Bad request",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/api/loanPredictService1484942117/v1.0.0/batch/{executionId}/{index}/files": {
+                        "get": {
+                            "security": [
+                                {
+                                    "Bearer": []
+                                }
+                            ],
+                            "tags": [
+                                "loanPredictService1484942117"
+                            ],
+                            "summary": "Gets all files from an individual execution in loanPredictService1484942117.",
+                            "operationId": "GetBatchExecutionFiles",
+                            "consumes": [
+                                "application/json"
+                            ],
+                            "produces": [
+                                "application/json"
+                            ],
+                            "parameters": [
+                                {
+                                    "name": "executionId",
+                                    "in": "path",
+                                    "description": "Execution id of the execution",
+                                    "required": true,
+                                    "type": "string"
+                                },
+                                {
+                                    "name": "index",
+                                    "in": "path",
+                                    "description": "Index of the execution in the batch.",
+                                    "required": true,
+                                    "type": "integer"
+                                }
+                            ],
+                            "responses": {
+                                 "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "default": {
+                                    "description": "Error \n * 404 - Web service not found \n * 404 - Execution not found \n * 400 - Bad request",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/api/loanPredictService1484942117/v1.0.0/batch/{executionId}/{index}/files/{fileName}": {
+                        "get": {
+                            "security": [
+                                {
+                                    "Bearer": []
+                                }
+                            ],
+                            "tags": [
+                                "loanPredictService1484942117"
+                            ],
+                            "summary": "Gets a specific file from an execution in loanPredictService1484942117.",
+                            "operationId": "GetBatchExecutionFile",
+                            "consumes": [
+                                "application/json"
+                            ],
+                            "produces": [
+                                "application/json"
+                            ],
+                            "parameters": [
+                                {
+                                    "name": "executionId",
+                                    "in": "path",
+                                    "description": "Execution id of the execution",
+                                    "required": true,
+                                    "type": "string"
+                                },
+                                {
+                                    "name": "index",
+                                    "in": "path",
+                                    "description": "Index of the execution in the batch.",
+                                    "required": true,
+                                    "type": "integer"
+                                },
+                                {
+                                    "name": "fileName",
+                                    "in": "path",
+                                    "description": "Name of the file to be returned.",
+                                    "required": true,
+                                    "type": "string"
+                                }
+                            ],
+                            "responses": {
+                                "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "type": "file"
+                                    }
+                                },
+                                "default": {
+                                    "description": "Error \n * 404 - Web service not found \n * 404 - Execution not found \n * 404 - File not found \n * 400 - Bad request",
+                                    "schema": {
+                                        "$ref": "#/definitions/Error"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "definitions": {
+                    "InputParameters": {
+                "type": "object",
+                "properties": {
+                    "revol_util": {
+                        "type": "number",
+                        "description": "numeric"
+                    },"loan_amnt": {
+                        "type": "number",
+                        "description": "numeric"
+                    },"int_rate": {
+                        "type": "number",
+                        "description": "numeric"
+                    },"mths_since_last_record": {
+                        "type": "number",
+                        "description": "numeric"
+                    },"annual_inc_joint": {
+                        "type": "number",
+                        "description": "numeric"
+                    },"dti_joint": {
+                        "type": "number",
+                        "description": "numeric"
+                    },"total_rec_prncp": {
+                        "type": "number",
+                        "description": "numeric"
+                    },"all_util": {
+                        "type": "number",
+                        "description": "numeric"
+                    }
+                }
+            },
+                    "OutputParameters": {
+                "type": "object",
+                "properties": {
+                    "loanScore": {
+                        "type": "number",
+                        "description": "numeric"
+                    }
+                }
+            },
+                    "Error": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "integer",
+                                "format": "int32"
+                            },
+                            "message": {
+                                "type": "string"
+                            },
+                            "fields": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "WebServiceResult": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "description": "Boolean flag indicating the success status of web service execution."
+                            },
+                            "errorMessage": {
+                                "type": "string",
+                                "description": "Error messages if any occurred during the web service execution."
+                            },
+                            "consoleOutput": {
+                                "type": "string",
+                                "description": "Console output from the web service execution."
+                            },
+                            "changedFiles": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "The filename of a modified file during the web service execution."
+                                },
+                                "description": "The filenames of the files modified during the web service execution."
+                            }
+                            ,
+            "outputParameters": {
+                "$ref": "#/definitions/OutputParameters"
+            }
+                        }
+                    },
+                    "StartBatchExecutionResponse": {
+                        "type": "object",
+                        "properties": {
+                            "batchExecutionId": {
+                                "type": "string",
+                                "description": "Id of the asynchronous execution."
+                            }
+                        }
+                    },
+                    "BatchWebServiceResult": {
+                        "type": "object",
+                        "properties": {
+                            "state": {
+                                "type": "string",
+                                "enum": [
+                                    "pending",
+                                    "inProgress",
+                                    "ready",
+                                    "complete"
+                                ],
+                                "description": "State of the execution. Can be of the following values:\n - Pending: The batch execution was submitted but is not yet scheduled.\nReady: The batch execution was submitted and can be executed.\nInProgress: The batch execution is currently being processed.\nComplete: The batch execution has been completed."
+                            },
+                            "completedItemCount": {
+                                "type": "integer",
+                                "format": "int32",
+                                "description": "Number of completed items in this batch operation."
+                            },
+                            "totalItemCount": {
+                                "type": "integer",
+                                "format": "int32",
+                                "description": "Number of total items in this batch operation."
+                            },
+                            "batchExecutionResults": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/WebServiceResult"
+                                },
+                                "description": "The responses of the individual executions."
+                            }
+                        }
+                    },
+                    "LoginRequest": {
+                        "type": "object",
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "The name of the user."
+                            },
+                            "password": {
+                                "type": "string",
+                                "description": "The password of the user."
+                            }
+                        }
+                    },
+                    "RenewTokenRequest": {
+                        "type": "object",
+                        "properties": {
+                            "refreshToken": {
+                                "type": "string",
+                                "description": "A currently valid refresh token."
+                            }
+                        }
+                    },
+                    "AccessTokenResponse": {
+                        "type": "object",
+                        "properties": {
+                            "token_type": {
+                                "type": "string"
+                            },
+                            "access_token": {
+                                "type": "string"
+                            },
+                            "expires_on": {
+                                "type": "string"
+                            },
+                            "refresh_token": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }

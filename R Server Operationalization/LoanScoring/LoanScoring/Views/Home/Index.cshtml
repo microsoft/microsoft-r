@@ -1,0 +1,91 @@
+﻿@model LoanScoring.Models.LoanDetailModel
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h3><b>Predict Loan Defaults</b></h3>
+    <p><a href="http://bankrate.com" class="btn btn-primary btn-lg">Explore Loan Rates &raquo;</a></p>
+</div>
+<div class="loanform">
+    @using (Html.BeginForm("Index", "Home", FormMethod.Post))
+    {
+        <table cellpadding="0" cellspacing="0">
+            <tr>
+                <th colspan="1"><h3><b>ENTER LOAN DETAILS FOR PREDICTION</b></h3></th>
+            </tr>
+            <tr>
+                <td>Loan Id: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.loanId)
+                    @Html.ValidationMessageFor(m => m.loanId)
+                </td>
+            </tr>
+            <tr>
+                <td>Loan Originator Name: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.loanOriginatorName)
+                    @Html.ValidationMessageFor(m => m.loanOriginatorName)
+                </td>
+            </tr>
+            <tr>
+                <td>Loan Amount: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.loanAmnt)
+                    @Html.ValidationMessageFor(m => m.loanAmnt)
+                </td>
+            </tr>
+            <tr>
+                <td>Interest Rate: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.intRate)
+                    @Html.ValidationMessageFor(m => m.intRate)
+                </td>
+            </tr>
+            <tr>
+                <td>Revolving Credit Utilization Rate: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.revolUtil)
+                    @Html.ValidationMessageFor(m => m.revolUtil)
+                </td>
+            </tr>
+            <tr>
+                <td>Month Since Last Public Record: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.mthsSinceLastRecod)
+                    @Html.ValidationMessageFor(m => m.mthsSinceLastRecod)
+                </td>
+            </tr>
+            <tr>
+                <td>Joint Annual Income: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.annualIncJoint)
+                    @Html.ValidationMessageFor(m => m.annualIncJoint)
+                </td>
+            </tr>
+            <tr>
+                <td>Debt to Income Ratio - Joint: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.dtiJoin)
+                    @Html.ValidationMessageFor(m => m.dtiJoin)
+                </td>
+            </tr>
+            <tr>
+                <td>Principal Received till date: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.totalRecPrncp)
+                    @Html.ValidationMessageFor(m => m.totalRecPrncp)
+                </td>
+            </tr>
+            <tr>
+                <td>Balance to Credit Limits: </td>
+                <td>
+                    @Html.TextBoxFor(m => m.allUtil)
+                    @Html.ValidationMessageFor(m => m.allUtil)
+                </td>
+            </tr>
+        </table>
+        <input type="submit" class="btn btn-primary btn-submit" name="scoreLoan" value="Score Loan" />
+        <h3 class="text-primary"><b>@ViewBag.loanprediction</b></h3>
+    }
+</div>
