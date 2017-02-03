@@ -1,0 +1,47 @@
+﻿@model PredictOperatingMargin.Models.HotelOperatingModel
+@{
+    ViewBag.Title = "Home Page";
+}
+<div class="banner">
+    <h5><b><i><u></u> Operating Margin for new Hotels.</u></i></b></h5>
+ </div>
+<div class="">
+    @using (Html.BeginForm("Index", "Home", FormMethod.Post))
+    {
+        <table cellpadding="0" cellspacing="0">
+            <tr>
+                <th colspan="1"><h3><b>Enter location information for prediction.</b></h3></th>
+            </tr>
+            <tr>
+                <td>Number of rooms (ex - 1000, 1225 etc.): </td>
+                <td>
+                    @Html.TextBoxFor(m => m.numberOfRooms)
+                    @Html.ValidationMessageFor(m => m.numberOfRooms)
+                </td>
+            </tr>
+            <tr>
+                <td>Distance to nearest competition (ex - 1, 2, etc.): </td>
+                <td>
+                    @Html.TextBoxFor(m => m.nearestCompetition)
+                    @Html.ValidationMessageFor(m => m.nearestCompetition)
+                </td>
+            </tr>
+            <tr>
+                <td>City annual visitors (ex - 500000 etc.): </td>
+                <td>
+                    @Html.TextBoxFor(m => m.cityAnnualVisitor)
+                    @Html.ValidationMessageFor(m => m.cityAnnualVisitor)
+                </td>
+            </tr>
+            <tr>
+                <td>Income (ex - 75K etc.): </td>
+                <td>
+                    @Html.TextBoxFor(m => m.cityMedianIncome)
+                    @Html.ValidationMessageFor(m => m.cityMedianIncome)
+                </td>
+            </tr>
+         </table>
+        <input type="submit" class="btn btn-primary btn-submit" name="scoreoperatingmargin" value="Score Operating Margin" />
+        <h3 class="text-primary"><b>@ViewBag.operatingmarginlevel</b></h3>
+    }
+</div>
