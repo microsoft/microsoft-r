@@ -9,7 +9,7 @@ usePackage("ggplot2")
 usePackage("mrsdeploy")
 
 # Read data  
-x <- read.csv(curl("https://raw.githubusercontent.com/Prabhat-MSFT/PredictOperatingMargin/master/Data/TrainingData.csv"))
+x <- read.csv(curl("https://raw.githubusercontent.com/Microsoft/microsoft-r/master/R%20Server%20Operationalization/PredictOperatingMargin/Data/TrainingData.csv"))
 head(x,5)
 
 # Create model  
