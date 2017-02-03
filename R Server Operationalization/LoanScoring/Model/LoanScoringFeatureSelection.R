@@ -19,7 +19,7 @@ print(dest_filename, quote=FALSE);
 jpeg(filename=dest_filename, height=3900, width = 6400, res=300); 
 
 #filtering numeric columns
-loans <- read.csv("https://raw.githubusercontent.com/Prabhat-MSFT/LoanScoring/master/Data/SampleLoanData.csv")
+loans <- read.csv("https://raw.githubusercontent.com/Microsoft/microsoft-r/master/R%20Server%20Operationalization/LoanScoring/Data/SampleLoanData.csv")
 numeric_cols <- sapply(loans, is.numeric)
 
 numeric_cols
