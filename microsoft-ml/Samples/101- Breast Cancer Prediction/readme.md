@@ -1,8 +1,8 @@
 # Breast cancer prediction using rxFastLinear
 
-In this starter sample, we'll use the well known UCI dataset Breast Cancer, and MicrosoftML's **rxFastLinear** algorithm to build a model to predict breast cancer based on the dataset.
+In this starter sample, we'll use the well known Breast Cancer UCI dataset with MicrosoftML's **rxFastLinear** algorithm to build a model to predict breast cancer.
 
-The machine learning task here is a binary classification. Where given characteristics of a cell mass, predict whether the mass is benign or malignant.
+The machine learning task here is a binary classification problem. Where given characteristics of a cell mass, predict whether the mass is benign or malignant.
 
 Get more information on MicrosoftML functions [here](https://msdn.microsoft.com/en-us/microsoft-r/microsoftml/microsoftml).
 
