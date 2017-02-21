@@ -88,7 +88,7 @@ testDS <- breastCancerDS[-bCDS, ] # This gives us the remaining 25%
 ```
 
 ---
-## <a name="#a-train"></a>6. Train a model using rxFastLinear(#a-train)
+## <a name="#a-train"></a>6. Train a model using rxFastLinear
 Using the training dataset obtained from the previous step, we'll use the rxFastLinear MicrosoftML algorithm to train a model. 
 A unique feature of the rxFastLinear is that the L1 and L2 regularization factors are automatically determined from the dataset.
 
