@@ -1,4 +1,4 @@
-# Breast cancer prediction using rxFastLinear
+ Breast cancer prediction using rxFastLinear
 
 In this starter sample, we'll use the well known Breast Cancer UCI dataset with MicrosoftML's **rxFastLinear** algorithm to build a model to predict breast cancer.
 
@@ -50,7 +50,7 @@ library(MicrosoftML)
 ```
 
 ---
-## <a name="#a-dsload"></a>3. Load the breast cancer dataset from mlbench
+## <a name="a-dsload"></a>3. Load the breast cancer dataset from mlbench
 
 ```
 # Load the breast cancer dataset in the mlbench library
@@ -62,7 +62,7 @@ summary(BreastCancer)
 ```
 
 ---
-## <a name="#a-prep"></a>4. Prep the dataset for use by MicrosoftML
+## <a name="a-prep"></a>4. Prep the dataset for use by MicrosoftML
 
 ```
 # Since the label column (Class) is text, and the ML algorithm can train only
@@ -76,7 +76,7 @@ breastCancerDS <- select(BreastCancer, -Id, -Class)
 ```
 
 ---
-## <a name="#a-split"></a>5. Partition the dataset into train and test datasets using caret
+## <a name="a-split"></a>5. Partition the dataset into train and test datasets using caret
 
 ```
 # Partition the dataset 75%/25% split in order to create a train and test dataset
@@ -88,7 +88,7 @@ testDS <- breastCancerDS[-bCDS, ] # This gives us the remaining 25%
 ```
 
 ---
-## <a name="#a-train"></a>6. Train a model using rxFastLinear
+## <a name="a-train"></a>6. Train a model using rxFastLinear
 Using the training dataset obtained from the previous step, we'll use the rxFastLinear MicrosoftML algorithm to train a model. 
 A unique feature of the rxFastLinear is that the L1 and L2 regularization factors are automatically determined from the dataset.
 
@@ -101,7 +101,7 @@ model <- rxFastLinear(formula = Label ~ ., data = trainDS)
 ```
 
 ---
-## <a name="#a-test"></a>7. Predict using the test dataset
+## <a name="a-test"></a>7. Predict using the test dataset
 
 ```
 # Let's evaluate the model using the test dataset
@@ -111,7 +111,7 @@ head(score)
 ```
 
 ---
-## <a name="##a-eval"></a>8. Evaluate the performance of the model
+## <a name="a-eval"></a>8. Evaluate the performance of the model
 
 ```
 # Let's look at the AUC and ROC
