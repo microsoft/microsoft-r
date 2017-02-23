@@ -15,7 +15,7 @@ Since the [dataset](https://archive.ics.uci.edu/ml/machine-learning-databases/00
 The main steps are as follows:
 
 1. [Load MicrosoftML package](#a-mmlload)
-2. [Load the breast cancer dataset from mlbench](#a-dsload)
+2. [Load the training dataset](#a-dsload)
 3. [Setup the featurizeText() transform](#a-trans)
 5. [Train a model using rxFastLinear](#a-train)
 6. [Predict using the test dataset](#a-test)
