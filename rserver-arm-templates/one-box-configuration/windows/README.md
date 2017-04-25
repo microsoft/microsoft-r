@@ -7,6 +7,11 @@
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
-https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial
 
-https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial#how-to-perform-a-one-box-configuration
+
+## Setup and Configure R Server Operationalization 
+[Configuring R Server for Operationalization](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial)
+
+
+## How to Perform One-Box Configuration
+[One-Box Configuration](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial#how-to-perform-a-one-box-configuration)
