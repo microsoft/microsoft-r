@@ -17,6 +17,9 @@
 [One-Box Configuration](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial#how-to-perform-a-one-box-configuration)
 
 
+[Supported Platforms](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial?#supported-platforms) 
+
+
 Once you have deployed the One-Box in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
 
@@ -37,3 +40,6 @@ remoteLogin("http://016ntest.eastus.cloudapp.azure.com:12800",
 
 
 and start [Publishing Web Services](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/data-scientist-manage-services).
+
+
+To connect to your Linux virtual machine using SSH, use the following command: ssh <adminUsername>@<Public IP address>

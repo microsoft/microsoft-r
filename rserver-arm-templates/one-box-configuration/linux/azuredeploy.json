@@ -65,7 +65,7 @@
     "linuxOS": {
       "type": "string",
       "defaultValue": "CentOS",
-      "allowedValues": [ "CentOS", "RedHat", "Ubuntu", "Linux" ],
+      "allowedValues": [ "CentOS", "RedHat", "Ubuntu" ],
       "metadata": {
         "description": "The linux flavor for the VM"
       }
