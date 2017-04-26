@@ -115,7 +115,7 @@
       "apiVersion": "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('networkSecurityGroupName')]",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [
           {
