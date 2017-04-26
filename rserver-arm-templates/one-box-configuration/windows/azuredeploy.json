@@ -178,7 +178,7 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "MicrosoftRServer",
-            "offer": "[concat('RServer-WS',[parameters('windowsServerVersion')])]",
+            "offer": "[concat('RServer-WS', parameters('windowsServerVersion'))]",
             "sku": "Enterprise",
             "version": "latest"
           },
