@@ -47,7 +47,7 @@ if($aadTenant -ne "") {
 
 $appSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.WebNode\appsettings.json"
 
-Start-Process "C:\Program Files\dotnet\dotnet.exe" -Wait -ArgumentList """C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.Utils.AdminUtil\Microsoft.RServer.Utils.AdminUtil.dll"" -$adminUtilMode ""$password""" -WorkingDirectory "C:\Program Files\Microsoft\R Server\R_SERVER\o16n" -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+Start-Process "C:\Program Files\dotnet\dotnet.exe" -Wait -ArgumentList """C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.Utils.AdminUtil\Microsoft.RServer.Utils.AdminUtil.dll"" -silentWebNodeInstall ""$password""" -WorkingDirectory "C:\Program Files\Microsoft\R Server\R_SERVER\o16n" -RedirectStandardOutput out.txt -RedirectStandardError err.txt
 
 taskkill /f /im dotnet.exe
 Disable-ScheduledTask -TaskName "autostartwebnode"
