@@ -23,8 +23,7 @@ Once you have deployed the One-Box in Azure, you can connect to it using remoteL
 ```R
 remoteLogin("http://<dnsLabelPrefix>.<region>.cloudapp.azure.com:12800",
              username = "admin",
-             password = "<adminPassword>",
-             session = FALSE)
+             password = "<adminPassword>")
 ```
 
 
@@ -33,8 +32,7 @@ For Example :
 ```R
 remoteLogin("http://016ntest.eastus.cloudapp.azure.com:12800",
              username = "admin",
-             password = "Pa$$w0rd",
-             session = FALSE)
+             password = "Pa$$w0rd")
 ```
 
 
