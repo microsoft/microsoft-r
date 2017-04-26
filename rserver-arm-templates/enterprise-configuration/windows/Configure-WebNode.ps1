@@ -3,7 +3,7 @@ param (
     [string]$password,
     [string]$sqlServerConnectionString,
     [string]$aadTenant,
-    [string]$aadClientId,
+    [string]$aadClientId
 )
 
 function AllowRead-Certificate
