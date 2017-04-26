@@ -153,6 +153,9 @@
       "apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+      ],
       "location": "[resourceGroup().location]",
       "properties": {
         "addressSpace": {
