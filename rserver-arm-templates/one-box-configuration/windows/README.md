@@ -17,11 +17,24 @@
 [One-Box Configuration](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial#how-to-perform-a-one-box-configuration)
 
 
-Once you have deployed the One-Box in Azure, just install [Microsoft R Client](https://msdn.microsoft.com/en-us/microsoft-r/r-client-install-windows) and use the following code to remoteLogin() function in mrsdeploy package : 
+Once you have deployed the One-Box in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
 
 ```R
-remoteLogin("http://<dnsLabelPrefix>.<region>.cloudapp.azure.com:12800", username = admin, password = <adminPassword>, session = FALSE)
+remoteLogin("http://<dnsLabelPrefix>.<region>.cloudapp.azure.com:12800",
+             username = "admin",
+             password = "<adminPassword>",
+             session = FALSE)
+```
+
+
+For Example : 
+
+```R
+remoteLogin("http://016ntest.eastus.cloudapp.azure.com:12800",
+             username = "admin",
+             password = "Pa$$w0rd",
+             session = FALSE)
 ```
 
 
