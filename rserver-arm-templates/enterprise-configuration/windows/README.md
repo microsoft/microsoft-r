@@ -27,19 +27,28 @@ It is highly recommended to use encrypt traffic to your Microsoft R Server clust
 ### Steps to setup HTTPS
 Go to your Azure portal
 
+Go to 'Frontend Public IP Address', take a note of the DNS name (e.g. 4d307f24-dc38-4a5a-9c15-47f585e62ff3.cloudapp.net). Add a new DNS CNAME record on your dns server to point from your HTTPS domain to this address.
 
+Go to 'Application Gateway'
 
+Go to 'Listeners'
+
+Add new listener, set protocol to 'HTTPS', upload your .pfx
+
+Go to rules, change 'rule1' to use the Listener 'HTTPS' instead of 'HTTP'
+
+## Connect to your cluster
 
 Once you have deployed the cluster in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
 
 ```R
-remoteLogin("https://<dnsLabelPrefix>.<region>.cloudapp.azure.com",
-             username = "admin",
-             password = "<adminPassword>")
+remoteLogin("https://<yourdomain>",
+             username = "<username>",
+             password = "<password>")
 ```
 
-Or, if you haven't setup HTTPS
+Or, if you didn't setup HTTPS:
 
 ```R
 remoteLogin("http://<dnsLabelPrefix>.<region>.cloudapp.azure.com",
@@ -52,15 +61,15 @@ remoteLogin("http://<dnsLabelPrefix>.<region>.cloudapp.azure.com",
 For Example : 
 
 ```R
-remoteLogin("https://016ntest.eastus.cloudapp.azure.com",
-             username = "admin",
-             password = "Pa$$w0rd")
+remoteLogin("https://ml.contoso.com",
+             username = "myuser",
+             password = "myPa$$w0rd")
 ```
 
-Or, if you haven't setup HTTPS
+Or, if you didn't setup HTTPS:
 
 ```R
-remoteLogin("http://016ntest.eastus.cloudapp.azure.com",
+remoteLogin("http://mlcontoso.eastus.cloudapp.azure.com",
              username = "myuser",
              password = "myPa$$w0rd")
 ```
@@ -68,4 +77,10 @@ remoteLogin("http://016ntest.eastus.cloudapp.azure.com",
 
 and start [Publishing Web Services](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/data-scientist-manage-services).
 
-To connect to your Windows Server VM, you can remote desktop using its Public IP Address. 
+To connect to your cluster, use port 50000 for the first WebNode, 50001 for the second.
+
+For example:
+
+```R
+mstsc /v:<dnsLabelPrefix>.<region>.cloudapp.azure.com:50000
+```
