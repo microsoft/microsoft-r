@@ -83,9 +83,7 @@
     "networkSecurityGroupName": "[concat(parameters('dnsLabelPrefix'), 'NSG')]",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
     "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
-    "scriptFileName": "Configure-Onebox.ps1",
-    "folderName": "RServerSetup",
-    "scriptParameters": "[concat('-folderName ', variables('folderName'), ' -password \"', parameters('adminPassword'), '\"')]"
+    "folderName": "RServerSetup"
   },
   "resources": [
     {
@@ -277,11 +275,11 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(variables('scriptsUri'), variables('scriptFileName'))]"
+                "[concat(variables('scriptsUri'), 'Configure-Onebox.sh')]"
               ]             
             },
             "protectedSettings": {
-               "commandToExecute": "[concat('bash ', './', variables('scriptFileName'), ' ', variables('scriptParameters'))]"
+               "commandToExecute": "[concat('bash Configure-Onebox.sh \"', parameters('adminPassword'), '\"')]"
             }
           }
         }
