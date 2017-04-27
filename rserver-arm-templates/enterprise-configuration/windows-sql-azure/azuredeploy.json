@@ -185,7 +185,8 @@
     "appGwSubnetPrefix": "10.0.2.0/24",
     "appGwSubnetID": "[concat(variables('vnetID'),'/subnets/', variables('appGwSubnetName'))]",
     "appGwBackendPort": 80,
-    "appGwBePoolName": "AppGatewayBePool"
+    "appGwBePoolName": "AppGatewayBePool",
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
   },
   "resources": [
     {
@@ -335,7 +336,7 @@
                   "publisher": "Microsoft.Compute",
                   "settings": {
                     "fileUris": [
-                      "https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/enterprise-configuration/windows-sql-azure/Configure-WebNode.ps1"
+                      "[concat(variables('scriptsUri'), 'Configure-WebNode.ps1')]"                      
                     ]
                   },
                   "typeHandlerVersion": "1.8",
@@ -487,7 +488,7 @@
                   "publisher": "Microsoft.Compute",
                   "settings": {
                     "fileUris": [
-                      "https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/enterprise-configuration/windows-sql-azure/Configure-ComputeNode.ps1"
+                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.ps1')]"                      
                     ]
                   },
                   "typeHandlerVersion": "1.8",
