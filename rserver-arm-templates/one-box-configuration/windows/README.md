@@ -21,6 +21,10 @@
 [Supported Platforms](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/configuration-initial?#supported-platforms) 
 
 
+## Architecture
+![One-Box Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/one-box-configuration/windows/setup-onebox.png)
+
+
 Once you have deployed the One-Box in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
 
