@@ -18,7 +18,7 @@
     },
     "computeNodeVMSku": {
       "type": "string",
-      "defaultValue": "Standard_D12_v2",
+      "defaultValue": "Standard_F8s",
       "metadata": {
         "description": "Size of the Compute Node VMs."
       }
@@ -38,6 +38,22 @@
       },
       "defaultValue": 2,
       "maxValue": 100
+    },
+    "poolInitialSize": {
+      "type": "int",
+      "metadata": {
+        "description": "Pool size at startup of ComputeNode."
+      },
+      "defaultValue": 5,
+      "maxValue": 1000
+    },
+    "poolMaxSize": {
+      "type": "int",
+      "metadata": {
+        "description": "Max pool size per ComputeNode. Must be larger than poolInitialSize."
+      },
+      "defaultValue": 500,
+      "maxValue": 1000
     },
     "adminUsername": {
       "type": "string",
@@ -407,7 +423,7 @@
                   "typeHandlerVersion": "1.8",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', './Configure-ComputeNode.ps1 -adminUtilMode \"silentComputeNodeInstall\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', './Configure-ComputeNode.ps1 -adminUtilMode \"silentComputeNodeInstall\" -poolInitialSize \"', parameters('poolInitialSize'), '\" -poolMaxSize \"', parameters('poolMaxSize'), '\"')]"
                   },
                   "type": "CustomScriptExtension"
                 }
