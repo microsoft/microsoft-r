@@ -43,4 +43,4 @@ remoteLogin("http://016ntest.eastus.cloudapp.azure.com:12800",
 and start [Publishing Web Services](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/data-scientist-manage-services).
 
 
-To connect to your Linux virtual machine using SSH, use the following command: ssh <adminUsername>@<Public IP address>
+To connect to your Linux virtual machine, you can SSH into its Public IP address.
