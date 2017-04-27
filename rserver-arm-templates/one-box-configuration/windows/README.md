@@ -46,4 +46,9 @@ remoteLogin("http://016ntest.eastus.cloudapp.azure.com:12800",
 
 and start [Publishing Web Services](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/data-scientist-manage-services).
 
-To connect to your Windows Server VM, you can remote desktop using its Public IP Address. 
+
+To connect to your Windows Server VM, you can remote desktop using its Public IP Address/DNS name. 
+
+```
+mstsc /v:<dnsLabelPrefix>.<region>.cloudapp.azure.com
+```

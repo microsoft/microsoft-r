@@ -69,7 +69,7 @@
       "metadata": {
         "description": "The Windows Server version for the VM"
       }
-    },
+    }
   },
   "variables": {
     "storageAccountName": "[concat(parameters('dnsLabelPrefix'), uniquestring(resourceGroup().id))]",
@@ -83,8 +83,7 @@
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
     "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
     "scriptFileName": "Configure-Onebox.ps1",
-    "folderName": "RServerSetup",
-    "scriptParameters": "[concat('-folderName ', variables('folderName'), ' -password \"', parameters('adminPassword'), '\"')]"
+    "scriptParameters": "[concat(' -password \"', parameters('adminPassword'), '\"')]"
   },
   "resources": [
     {

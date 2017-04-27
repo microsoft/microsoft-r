@@ -48,3 +48,7 @@ and start [Publishing Web Services](https://msdn.microsoft.com/en-us/microsoft-r
 
 
 To connect to your Linux virtual machine, you can SSH into its Public IP address.
+
+```
+ssh <adminUsername>@<dnsLabelPrefix>.<region>.cloudapp.azure.com
+```
