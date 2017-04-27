@@ -128,7 +128,23 @@
       "metadata": {
         "description": "Size of the Compute Node VMs."
       }
-    }    
+    },
+    "poolInitialSize": {
+      "type": "int",
+      "metadata": {
+        "description": "Pool size at startup of ComputeNode."
+      },
+      "defaultValue": 5,
+      "maxValue": 1000
+    },
+    "poolMaxSize": {
+      "type": "int",
+      "metadata": {
+        "description": "Max pool size per ComputeNode. Must be larger than poolInitialSize."
+      },
+      "defaultValue": 500,
+      "maxValue": 1000
+    }   
   },
   "variables": {
     "namingInfix": "[toLower(substring(concat(parameters('vmssName'), uniqueString(resourceGroup().id)), 0, 9))]",
@@ -158,8 +174,7 @@
     "computeNodeLoadBalancerFrontEndName": "computeNodeLoadBalancerFrontEnd",
     "computeNodeLoadBalancerBackEndName": "computeNodeLoadBalancerBackEnd",
     "computeNodeLoadBalancerNatPoolName": "computeNodeLoadBalancerNatPool",
-    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
-    "scriptFileName": "Configure-Node.ps1"
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"    
   },
   "resources": [
     {
@@ -464,13 +479,13 @@
                   "publisher": "Microsoft.Compute",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), variables('scriptFileName'))]"
+                      "[concat(variables('scriptsUri'), 'Configure-WebNode.ps1')]"    
                     ]
                   },
                   "typeHandlerVersion": "1.8",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', './', variables('scriptFileName'), ' -adminUtilMode \"silentWebNodeInstall\" -password \"', parameters('adminPassword'), '\" -username \"', parameters('adminUsername'), '\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1', ' -password \"', parameters('adminPassword'), '\" -username \"', parameters('adminUsername'), '\"')]"
                   },
                   "type": "CustomScriptExtension"
                 }
@@ -630,13 +645,13 @@
                   "publisher": "Microsoft.Compute",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), variables('scriptFileName'))]"
+                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.ps1')]"    
                     ]
                   },
                   "typeHandlerVersion": "1.8",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', './', variables('scriptFileName'), ' -adminUtilMode \"silentComputeNodeInstall\" -password \"', parameters('adminPassword'), '\" -username \"', parameters('adminUsername'), '\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-ComputeNode.ps1 -poolInitialSize \"', parameters('poolInitialSize'), '\" -poolMaxSize \"', parameters('poolMaxSize'), '\"')]"
                   },
                   "type": "CustomScriptExtension"
                 }
