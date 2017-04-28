@@ -419,7 +419,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
-      "name": "[concat(parameters('dnsPrefix'), 'WebNodes')]",
+      "name": "WebNodes",
       "location": "[resourceGroup().location]",
       "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
       "dependsOn": [
@@ -586,7 +586,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
-      "name": "[concat(parameters('dnsPrefix'), 'ComputeNodes')]",
+      "name": "ComputeNodes",
       "location": "[resourceGroup().location]",
       "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
       "dependsOn": [
