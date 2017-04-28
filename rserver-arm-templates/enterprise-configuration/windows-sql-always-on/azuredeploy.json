@@ -178,7 +178,7 @@
     "appGwPublicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses', variables('appGwPublicIPAddressName'))]",
     "appGwID": "[resourceId('Microsoft.Network/applicationGateways',variables('appGwName'))]",
     "appGwSubnetName": "[concat(variables('namingInfix'),'appGwSubnet')]",
-    "appGwSubnetPrefix": "10.0.2.0/24",
+    "appGwSubnetPrefix": "10.1.2.0/24",
     "appGwSubnetID": "[concat(variables('vnetID'),'/subnets/', variables('appGwSubnetName'))]",
     "appGwBackendPort": 80,
     "appGwBePoolName": "AppGatewayBePool",
