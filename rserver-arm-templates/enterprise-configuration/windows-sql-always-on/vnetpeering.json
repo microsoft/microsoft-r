@@ -2,7 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "deployRvnetName": {
+    "vnetName": {
       "type": "string"
     },
     "sqlvnetName": {
@@ -16,7 +16,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-      "name": "[concat(parameters('deployRvnetName'), '/LinkTo', parameters('sqlvnetName'))]",
+      "name": "[concat(parameters('vnetName'), '/LinkTo', parameters('sqlvnetName'))]",
       "location": "[resourceGroup().location]",
       "properties": {
         "allowVirtualNetworkAccess": true,
@@ -31,7 +31,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-      "name": "[concat(parameters('sqlvnetName'), '/LinkTo', parameters('deployRvnetName'))]",
+      "name": "[concat(parameters('sqlvnetName'), '/LinkTo', parameters('vnetName'))]",
       "location": "[resourceGroup().location]",
       "properties": {
         "allowVirtualNetworkAccess": true,
@@ -39,7 +39,7 @@
         "allowGatewayTransit": true,
         "useRemoteGateways": false,
         "remoteVirtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('deployRvnetName'))]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
         }
       }
     }
