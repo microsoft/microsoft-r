@@ -40,7 +40,7 @@ $appSettingsJson.Authentication.LDAP.QueryUserDn = "CN=$username,CN=Users,DC=con
 $appSettingsJson.Authentication.LDAP.QueryUserPassword = "$password"
 $appSettingsJson.Authentication.LDAP.SearchBase = "CN=Users,DC=contoso,DC=com"
 $appSettingsJson.Authentication.LDAP.SearchFilter = "cn={0}"
-$appSettingsJson.BackEndConfiguration.Uris | add-member -Name "Ranges" -value @("http://10.0.1.0-255:12805") -MemberType NoteProperty
+$appSettingsJson.BackEndConfiguration.Uris | add-member -Name "Ranges" -value @("http://10.1.1.0-255:12805") -MemberType NoteProperty
 $appSettingsJson.Authorization | add-member -Name "Owner" -value @("Owners") -MemberType NoteProperty
 $appSettingsJson.Authorization | add-member -Name "Contributor" -value @("Contributors") -MemberType NoteProperty
 $appSettingsJson.Authorization | add-member -Name "Reader" -value @("Readers") -MemberType NoteProperty
