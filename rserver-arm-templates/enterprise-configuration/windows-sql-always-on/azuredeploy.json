@@ -580,7 +580,7 @@
       "dependsOn": [
         "storageLoop",
         "Microsoft.Resources/deployments/vnetpeering",
-        "[resourceId('Microsoft.Network/loadBalancers', variables('computeNodeLoadBalancerName'))]"
+        "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
       ],
       "sku": {
         "name": "[parameters('computeNodeVMSku')]",
