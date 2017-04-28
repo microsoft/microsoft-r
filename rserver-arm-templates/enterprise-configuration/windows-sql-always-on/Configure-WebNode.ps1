@@ -3,16 +3,32 @@ param (
     [string]$password
 )
 
+function AllowRead-Certificate
+{
+    param($cert)
+
+	$rsaFileName = $cert.PrivateKey.CspKeyContainerInfo.UniqueKeyContainerName
+
+	$keyPath = "C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys\"
+	$fullPath = $keyPath+$rsaFileName
+
+	$acl = Get-Acl -Path $fullPath
+	$networkService = New-Object System.Security.Principal.SecurityIdentifier([System.Security.Principal.WellKnownSidType]::NetworkServiceSid, $null)
+	$permission=$networkService,"Read","Allow"
+	$accessRule=new-object System.Security.AccessControl.FileSystemAccessRule $permission
+	$acl.AddAccessRule($accessRule)
+
+	Set-Acl $fullPath $acl
+}
+
+Push-Location Cert:\LocalMachine\My\
+Get-ChildItem | where { $_.Subject -eq 'DC=Windows Azure CRP Certificate Generator' -And $_.HasPrivateKey -And ($_.PrivateKey.CspKeyContainerInfo.UniqueKeyContainerName -eq $Null) } | Remove-Item
+$cert = (Get-ChildItem | where { $_.Subject -eq 'DC=Windows Azure CRP Certificate Generator' })[0]
+Pop-Location
+
+AllowRead-Certificate($cert)
+
 $appSettingsJson = Get-Content -Encoding UTF8 -Raw "C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.WebNode\appsettings.json" | ConvertFrom-Json
-$cert = Get-ChildItem -Path cert:\LocalMachine\My | where { $_.Subject -eq "DC=Windows Azure CRP Certificate Generator" }
-$rsaFileName = $cert.PrivateKey.CspKeyContainerInfo.UniqueKeyContainerName
-$fullPath = $keyPath+$rsaFileName
-$acl = Get-Acl -Path $fullPath
-$networkService = New-Object System.Security.Principal.SecurityIdentifier([System.Security.Principal.WellKnownSidType]::NetworkServiceSid, $null)
-$permission=$networkService,"Read","Allow"
-$accessRule=new-object System.Security.AccessControl.FileSystemAccessRule $permission
-$acl.AddAccessRule($accessRule)
-Set-Acl $fullPath $acl
 $appSettingsJson.Authentication.JWTSigningCertificate.Enabled = $True
 $appSettingsJson.Authentication.JWTSigningCertificate.SubjectName = "DC=Windows Azure CRP Certificate Generator"
 $appSettingsJson.ConnectionStrings.defaultDb.Enabled = $False
