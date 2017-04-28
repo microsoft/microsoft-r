@@ -189,18 +189,30 @@
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vnetName')]",
       "location": "[resourceGroup().location]",
-      "apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
+      "apiVersion": "2016-03-30",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "10.1.0.0/16"
+            "10.0.0.0/16"
           ]
         },
         "subnets": [
           {
-            "name": "[variables('subnetName')]",
+            "name": "[variables('feSubnetName')]",
             "properties": {
-              "addressPrefix": "10.1.0.0/24"
+              "addressPrefix": "10.0.0.0/24"
+            }
+          },
+          {
+            "name": "[variables('beSubnetName')]",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24"
+            }
+          },
+          {
+            "name": "[variables('appGwSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('appGwSubnetPrefix')]"
             }
           }
         ]
@@ -721,39 +733,6 @@
                 }
               }
             ]
-          }
-        ]
-      }
-    },
-    {
-      "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('vnetName')]",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2016-03-30",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "10.0.0.0/16"
-          ]
-        },
-        "subnets": [
-          {
-            "name": "[variables('feSubnetName')]",
-            "properties": {
-              "addressPrefix": "10.0.0.0/24"
-            }
-          },
-          {
-            "name": "[variables('beSubnetName')]",
-            "properties": {
-              "addressPrefix": "10.0.1.0/24"
-            }
-          },
-          {
-            "name": "[variables('appGwSubnetName')]",
-            "properties": {
-              "addressPrefix": "[variables('appGwSubnetPrefix')]"
-            }
           }
         ]
       }
