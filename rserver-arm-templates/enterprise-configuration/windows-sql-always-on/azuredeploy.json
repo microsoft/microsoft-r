@@ -158,30 +158,38 @@
       "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '4')))]"
     ],
     "saCount": "[length(variables('uniqueStringArray'))]",
-    "sqlserverName": "[concat('sqlserver', uniqueString(resourceGroup().id))]",
-    "deployRvnetName": "deployRvnet",
+    "vnetName": "vnet",
     "sqlvnetName": "sqlvnet",
     "subnetName": "subnet",
-    "deployRvnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('deployRvnetName'))]",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
     "sqlvnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('sqlvnetName'))]",
-    "subnetRef": "[concat(variables('deployRvnetID'),'/subnets/',variables('subnetName'))]",
-    "publicIPAddressName": "pip",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
+    "publicIPAddressName": "PublicIP",
+    "feSubnetName": "WebNodeSubnet",
+    "beSubnetName": "ComputeNodeSubnet",
+    "feSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('feSubnetName'))]",
+    "beSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('beSubnetName'))]",
     "webNodeLoadBalancerName": "webNodeLoadBalancer",
     "webNodeLoadBalancerFrontEndName": "webNodeLoadBalancerFrontEnd",
     "webNodeLoadBalancerBackEndName": "webNodeLoadBalancerBackEnd",
     "webNodeLoadBalancerNatPoolName": "webNodeLoadBalancerNatPool",
-    "computeNodeLoadBalancerName": "computeNodeLoadBalancer",
-    "computeNodeLoadBalancerFrontEndName": "computeNodeLoadBalancerFrontEnd",
-    "computeNodeLoadBalancerBackEndName": "computeNodeLoadBalancerBackEnd",
-    "computeNodeLoadBalancerNatPoolName": "computeNodeLoadBalancerNatPool",
-    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"    
+    "appGwPublicIPAddressName": "AppGatewayIP",
+    "appGwName": "AppGateway",
+    "appGwPublicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses', variables('appGwPublicIPAddressName'))]",
+    "appGwID": "[resourceId('Microsoft.Network/applicationGateways',variables('appGwName'))]",
+    "appGwSubnetName": "[concat(variables('namingInfix'),'appGwSubnet')]",
+    "appGwSubnetPrefix": "10.1.2.0/24",
+    "appGwSubnetID": "[concat(variables('vnetID'),'/subnets/', variables('appGwSubnetName'))]",
+    "appGwBackendPort": 80,
+    "appGwBePoolName": "AppGatewayBePool",
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
   },
   "resources": [
     {
       "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('deployRvnetName')]",
+      "name": "[variables('vnetName')]",
       "location": "[resourceGroup().location]",
-      "apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
+      "apiVersion": "2016-03-30",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -190,9 +198,21 @@
         },
         "subnets": [
           {
-            "name": "[variables('subnetName')]",
+            "name": "[variables('feSubnetName')]",
             "properties": {
               "addressPrefix": "10.1.0.0/24"
+            }
+          },
+          {
+            "name": "[variables('beSubnetName')]",
+            "properties": {
+              "addressPrefix": "10.1.1.0/24"
+            }
+          },
+          {
+            "name": "[variables('appGwSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('appGwSubnetPrefix')]"
             }
           }
         ]
@@ -203,7 +223,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "[providers('Microsoft.Resources','deployments').apiVersions[0]]",
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', variables('deployRvnetName'))]"
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -370,8 +390,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "deployRvnetName": {
-            "value": "[variables('deployRvnetName')]"
+          "vnetName": {
+            "value": "[variables('vnetName')]"
           },
           "sqlvnetName": {
             "value": "[variables('sqlvnetName')]"
@@ -399,7 +419,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
-      "name": "[concat(parameters('dnsPrefix'), 'WebNodes')]",
+      "name": "WebNodes",
       "location": "[resourceGroup().location]",
       "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
       "dependsOn": [
@@ -452,7 +472,7 @@
                       "name": "ipconfig",
                       "properties": {
                         "subnet": {
-                          "id": "[variables('subnetRef')]"
+                          "id": "[variables('feSubnetRef')]"
                         },
                         "loadBalancerBackendAddressPools": [
                           {
@@ -462,6 +482,11 @@
                         "loadBalancerInboundNatPools": [
                           {
                             "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('webNodeLoadBalancerName'), '/inboundNatPools/', variables('webNodeLoadBalancerNatPoolName'), 'RDP')]"
+                          }
+                        ],
+                        "ApplicationGatewayBackendAddressPools": [
+                          {
+                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/applicationGateways/', variables('appGwName'), '/backendAddressPools/', variables('appGwBePoolName'))]"
                           }
                         ]
                       }
@@ -501,11 +526,11 @@
       "name": "autoscalewn",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachineScaleSets/', concat(parameters('dnsPrefix'), 'WebNodes'))]"
+        "Microsoft.Compute/virtualMachineScaleSets/WebNodes"
       ],
       "properties": {
         "name": "autoscalewn",
-        "targetResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', concat(parameters('dnsPrefix'), 'WebNodes'))]",
+        "targetResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
         "enabled": true,
         "profiles": [
           {
@@ -520,7 +545,7 @@
                 "metricTrigger": {
                   "metricName": "Percentage CPU",
                   "metricNamespace": "",
-                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', concat(parameters('dnsPrefix'), 'WebNodes'))]",
+                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
                   "timeWindow": "PT5M",
@@ -539,7 +564,7 @@
                 "metricTrigger": {
                   "metricName": "Percentage CPU",
                   "metricNamespace": "",
-                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', concat(parameters('dnsPrefix'), 'WebNodes'))]",
+                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
                   "timeWindow": "PT5M",
@@ -561,13 +586,13 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
-      "name": "[concat(parameters('dnsPrefix'), 'ComputeNodes')]",
+      "name": "ComputeNodes",
       "location": "[resourceGroup().location]",
       "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
       "dependsOn": [
         "storageLoop",
         "Microsoft.Resources/deployments/vnetpeering",
-        "[resourceId('Microsoft.Network/loadBalancers', variables('computeNodeLoadBalancerName'))]"
+        "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
       ],
       "sku": {
         "name": "[parameters('computeNodeVMSku')]",
@@ -615,21 +640,8 @@
                       "name": "ipconfig",
                       "properties": {
                         "subnet": {
-                          "id": "[variables('subnetRef')]"
-                        },
-                        "loadBalancerBackendAddressPools": [
-                          {
-                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('computeNodeLoadBalancerName'), '/backendAddressPools/', variables('computeNodeLoadBalancerBackEndName'))]"
-                          }
-                        ],
-                        "loadBalancerInboundNatPools": [
-                          {
-                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('computeNodeLoadBalancerName'), '/inboundNatPools/', variables('computeNodeLoadBalancerNatPoolName'), 'RDP')]"
-                          },
-                          {
-                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('computeNodeLoadBalancerName'), '/inboundNatPools/', variables('computeNodeLoadBalancerNatPoolName'), 'HTTP')]"
-                          }
-                        ]
+                          "id": "[variables('beSubnetRef')]"
+                        }
                       }
                     }
                   ]
@@ -667,11 +679,11 @@
       "name": "autoscalecn",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachineScaleSets/', concat(parameters('dnsPrefix'), 'ComputeNodes'))]"
+        "Microsoft.Compute/virtualMachineScaleSets/ComputeNodes"
       ],
       "properties": {
         "name": "autoscalecn",
-        "targetResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', concat(parameters('dnsPrefix'), 'ComputeNodes'))]",
+        "targetResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
         "enabled": true,
         "profiles": [
           {
@@ -686,7 +698,7 @@
                 "metricTrigger": {
                   "metricName": "Percentage CPU",
                   "metricNamespace": "",
-                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', concat(parameters('dnsPrefix'), 'ComputeNodes'))]",
+                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
                   "timeWindow": "PT5M",
@@ -705,7 +717,7 @@
                 "metricTrigger": {
                   "metricName": "Percentage CPU",
                   "metricNamespace": "",
-                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/', concat(parameters('dnsPrefix'), 'ComputeNodes'))]",
+                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
                   "timeWindow": "PT5M",
@@ -779,7 +791,7 @@
               },
               "protocol": "tcp",
               "frontendPort": 80,
-              "backendPort": 12800,
+              "backendPort": 80,
               "enableFloatingIP": false,
               "idleTimeoutInMinutes": 5
             }
@@ -789,7 +801,7 @@
           {
             "properties": {
               "protocol": "tcp",
-              "port": 12800,
+              "port": 80,
               "intervalInSeconds": 10,
               "numberOfProbes": 2
             },
@@ -813,54 +825,123 @@
       }
     },
     {
-      "type": "Microsoft.Network/loadBalancers",
-      "name": "[variables('computeNodeLoadBalancerName')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('appGwPublicIPAddressName')]",
       "location": "[resourceGroup().location]",
-      "apiVersion": "[providers('Microsoft.Network','loadBalancers').apiVersions[0]]",
+      "apiVersion": "2016-06-01",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "type": "Microsoft.Network/applicationGateways",
+      "name": "[variables('appGwName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-06-01",
       "dependsOn": [
-        "storageLoop"
+        "[variables('vnetID')]",
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('appGwPublicIPAddressName'))]"
       ],
       "properties": {
-        "frontendIPConfigurations": [
+        "sku": {
+          "name": "Standard_Medium",
+          "tier": "Standard",
+          "capacity": "3"
+        },
+        "gatewayIPConfigurations": [
           {
-            "name": "[variables('computeNodeLoadBalancerFrontEndName')]",
+            "name": "appGwIpConfig",
             "properties": {
               "subnet": {
-                "id": "[variables('subnetRef')]"
-              },
-              "privateIPAddress": "10.1.0.5",
-              "privateIPAllocationMethod": "Static"
+                "id": "[variables('appGwSubnetID')]"
+              }
+            }
+          }
+        ],
+        "frontendIPConfigurations": [
+          {
+            "name": "appGwFrontendIP",
+            "properties": {
+              "PublicIPAddress": {
+                "id": "[variables('appGwPublicIPAddressID')]"
+              }
+            }
+          }
+        ],
+        "frontendPorts": [
+          {
+            "name": "appGwFrontendHttpPort",
+            "properties": {
+              "Port": "80"
+            }
+          },
+          {
+            "name": "appGwFrontendHttpsPort",
+            "properties": {
+              "Port": "443"
             }
           }
         ],
         "backendAddressPools": [
           {
-            "name": "[variables('computeNodeLoadBalancerBackendName')]"
+            "name": "[variables('appGwBePoolName')]"
           }
         ],
-        "inboundNatPools": [
+        "backendHttpSettingsCollection": [
           {
-            "name": "[concat(variables('computeNodeLoadBalancerNatPoolName'), 'RDP')]",
+            "name": "appGwBackendHttpSettings",
             "properties": {
-              "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('computeNodeLoadBalancerName')), '/frontendIPConfigurations/', variables('computeNodeLoadBalancerFrontEndName'))]"
-              },
-              "protocol": "tcp",
-              "frontendPortRangeStart": "50000",
-              "frontendPortRangeEnd": "50099",
-              "backendPort": "3389"
+              "Port": "[variables('appGwBackendPort')]",
+              "Protocol": "Http",
+              "CookieBasedAffinity": "Disabled",
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('appGwName')), '/probes/probe1')]"
+              }
             }
-          },
+          }
+        ],
+        "probes": [
           {
-            "name": "[concat(variables('computeNodeLoadBalancerNatPoolName'), 'HTTP')]",
+            "name": "probe1",
             "properties": {
-              "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('computeNodeLoadBalancerName')), '/frontendIPConfigurations/', variables('computeNodeLoadBalancerFrontEndName'))]"
+              "protocol": "http",
+              "host": "127.0.0.1",
+              "path": "/ping",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 5
+            }
+          }
+        ],
+        "httpListeners": [
+          {
+            "name": "HTTP",
+            "properties": {
+              "FrontendIPConfiguration": {
+                "Id": "[concat(variables('appGwID'), '/frontendIPConfigurations/appGwFrontendIP')]"
               },
-              "protocol": "tcp",
-              "frontendPortRangeStart": "40000",
-              "frontendPortRangeEnd": "40099",
-              "backendPort": "12805"
+              "FrontendPort": {
+                "Id": "[concat(variables('appGwID'), '/frontendPorts/appGwFrontendHttpPort')]"
+              },
+              "Protocol": "Http",
+              "SslCertificate": null
+            }
+          }
+        ],
+        "requestRoutingRules": [
+          {
+            "Name": "rule1",
+            "properties": {
+              "RuleType": "Basic",
+              "httpListener": {
+                "id": "[concat(variables('appGwID'), '/httpListeners/HTTP')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('appGwID'), '/backendAddressPools/', variables('appGwBePoolName'))]"
+              },
+              "backendHttpSettings": {
+                "id": "[concat(variables('appGwID'), '/backendHttpSettingsCollection/appGwBackendHttpSettings')]"
+              }
             }
           }
         ]
