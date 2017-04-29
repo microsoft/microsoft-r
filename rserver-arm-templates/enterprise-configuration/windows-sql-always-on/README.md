@@ -22,7 +22,7 @@
 
 
 ## Architecture
-![Windows-On-Prem Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/enterprise-configuration/windows-sql-always-on/windows-sql-always-on-architecture.jpg)
+![Windows-Sql-Always-On Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/enterprise-configuration/windows-sql-always-on/windows-sql-always-on-architecture.png)
 
 
 ## SQL Always On Architecture 
