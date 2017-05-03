@@ -608,6 +608,7 @@
       "apiVersion": "2016-06-01",
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 30,
         "dnsSettings": {
           "domainNameLabel": "[toLower(parameters('dnsPrefix'))]"
         }
@@ -691,7 +692,8 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2016-06-01",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic"
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 30
       }
     },
     {
