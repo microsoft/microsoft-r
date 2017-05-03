@@ -104,9 +104,9 @@
       "location": "[resourceGroup().location]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 30,
         "dnsSettings": {
           "domainNameLabel": "[parameters('dnsLabelPrefix')]",
-          "idleTimeoutInMinutes": 30
         }
       }
     },
