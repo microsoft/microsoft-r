@@ -105,7 +105,8 @@
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
-          "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+          "domainNameLabel": "[parameters('dnsLabelPrefix')]",
+          "idleTimeoutInMinutes": 30
         }
       }
     },
