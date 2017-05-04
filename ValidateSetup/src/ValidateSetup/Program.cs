@@ -18,26 +18,30 @@ namespace Microsoft.ValidateSetup
                 Console.WriteLine("Error is Loading Configuration File : " + e.Message);
             }
 
-            if (config != null) {
+            if (config != null)
+            {
 
                 List<StatusResponse> webNodeStatus = new List<StatusResponse>();
                 List<StatusResponse> lbStatus = new List<StatusResponse>();
-                bool statusCheck = true;
+                bool webNodeStatusCheck = false;
+                bool lbStatusCheck = false;
 
                 foreach (Uri uri in config.WebNodeUri)
                 {
-                    using (ValidateServer server = new ValidateServer(uri, config.User, config.Password)) { 
+                    using (ValidateServer server = new ValidateServer(uri, config.User, config.Password))
+                    {
                         try
                         {
                             Console.WriteLine("************* Validating WebNode Server : " + uri.AbsoluteUri + " ***************");
                             server.ExecuteValidateServer();
                             webNodeStatus.Add(server.Status);
+                            webNodeStatusCheck = true;
                         }
                         catch (Exception e)
                         {
                             string message = string.Format("Error Validating WebNode Server {0} ", uri.AbsoluteUri);
                             Console.WriteLine(message + e.Message);
-                            statusCheck = false;
+                            webNodeStatusCheck = false;
                         }
                     }
                 }
@@ -51,19 +55,24 @@ namespace Microsoft.ValidateSetup
                             Console.WriteLine("************* Validating LoadBalancer Server : " + uri.AbsoluteUri + " ***************");
                             server.ExecuteValidateServer();
                             lbStatus.Add(server.Status);
+                            lbStatusCheck = true;
                         }
                         catch (Exception e)
                         {
                             string message = string.Format("Error Validating LoadBalancer Server {0} ", uri.AbsoluteUri);
                             Console.WriteLine(message + e.Message);
-                            statusCheck = false;
+                            lbStatusCheck = false;
                         }
                     }
                 }
 
-                if (statusCheck)
+                if (webNodeStatusCheck)
                 {
                     ValidateExtensions.compareStatus(webNodeStatus);
+                }
+
+                if (lbStatusCheck)
+                {
                     ValidateExtensions.compareStatus(lbStatus);
                 }
             }
