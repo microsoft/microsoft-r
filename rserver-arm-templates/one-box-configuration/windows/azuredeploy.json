@@ -119,20 +119,6 @@
       "properties": {
         "securityRules": [
           {
-            "name": "HTTP",
-            "properties": {
-              "description": "Allows HTTP traffic",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "80",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Inbound"
-            }
-          },
-          {
             "name": "WebNode",
             "properties": {
               "description": "Allows WebNode traffic",
