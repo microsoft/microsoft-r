@@ -2,7 +2,7 @@
 
 ## What is Image Featurization
 
-Image featurization is the process by which given an image as input, the image featurizer outputs a numeric vector (aka feature vector). The extraction of the features is done via a pretrained Deep Neural Net model. The feature vector represents key features or characteristics of the image represented as a vector (list) of numbers.
+Image featurization is the process by which given an image as input, a numeric vector (aka feature vector) that represents key characteristics (features) of that image is produced. The extraction of the features is done via an image featurizer that uses a pretrained Deep Neural Net model. 
 
 Image featurization here is accomplished by using sophisticated DNN (Deep Neural Net) models that had already been pretrained on millions of images. As of this writing, we support 4 types of image featurization pretrained models:
 1. Resnet-18
