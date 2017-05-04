@@ -163,7 +163,8 @@ Distance With | 1 | 2 | 3 | 4
 4 | 26.98798 | 130.63937 | 74.19111 | NA          
 5 | 112.88821 | 113.06911 | 120.94154 | 127.79847
 
-Note that row 5 is the 5th image, that is the new image that we want matched against.
+Row 5 is the 5th image, that is the new image that we want matched against.
+(NOTE: The actual values can change depending on the machine its run on, but the relationship between the values should be the same)
 
 So this code extracts that row and finds the minimum value, ie smallest distance. Thereby indicating which image from the catalog matches the new image:
 
@@ -187,3 +188,64 @@ The closest matching image is:  Data/Pictures/Fish/Fish1.jpg
 ```
 
 ### Sample2: Train a custom image recognition model
+
+In this sample, we'll train a model to classify the type of an image by training a model using the feature vector of images from a training set.
+
+The method for obtaining the feature vectors of the images is exactly the same as the previous sample, so we won't go through those here.
+
+In this sample, we'll train a multiclass linear model to distinguish between fish, helicopter and fighter jet images. So to the dataframe containing the location of the training images, we'll add a Type column and a numeric Label column to indicate the class of the image.
+
+```R
+# Let's add the image type
+imagesDF$Type <- c("Fish","Fish","Fish","Fish","Fish",
+                   "Helicopter","Helicopter","Helicopter","Helicopter","Helicopter",
+                   "FighterJet","FighterJet","FighterJet","FighterJet","FighterJet")
+
+# Now since we're going to train on these images, we need to have a label
+# for each type that is a numeric value
+imagesDF$Label[imagesDF$Type == "Fish"] <- 0
+imagesDF$Label[imagesDF$Type == "Helicopter"] <- 1
+imagesDF$Label[imagesDF$Type == "FighterJet"] <- 2
+```
+
+Now let's traing a multiclass classifier using the **rxLogisticRegression** algorithm. Just for kicks, and to compare from the previous sample, we'll use the Resnet-50 model.
+
+```R
+# Now let's train a multiclass model using the image set we have
+# We'll use rxLogisticRegression
+imageModel <- rxLogisticRegression(
+  formula = Label~Features,
+  data = imagesDF,
+  type = "multiClass",
+  mlTransforms = list(
+    loadImage(vars = list(Features = "Image")),
+    resizeImage(vars = "Features", width = 224, height = 224),
+    extractPixels(vars = "Features"),
+    featurizeImage(var = "Features", dnnModel = "resnet50")) 
+)
+```
+
+Note that ```type = "multiClass"``` indicates that this is a multiclass training task.
+
+Now let's give it an image to classify. Note that this image was not part of the original training set. See the actual code for details.
+
+```R
+imageFile <- c(file.path(imageLocation, "FighterJet/FighterJet6.jpg"))
+```
+
+Now that we have the model, and after getting the feature vector of the image we want to classify, let's predict the type of the image.
+
+```R
+# Let's use the trained model to predict the type of image
+prediction <- rxPredict(imageModel, data = imageToMatch, extraVarsToWrite = list("Label", "Image"))
+
+# And the type of image is?
+typeOfImage <- imagesDF$Type[which(imagesDF$Label == prediction$PredictedLabel)[[1]]]
+cat(paste("The image is of type: ", typeOfImage))
+```
+
+And the result is?
+
+```R
+The image is of type:  FighterJet
+```
