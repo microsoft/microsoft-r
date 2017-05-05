@@ -44,7 +44,7 @@ There  are five key APIs at play here. Four of these APIs are input parameter va
 2. **resizeImage()**: Ensures that the images get resized to the dimensions required by the model used, irrespective of the original dimensions of the input images. Each of the four pretrained models supported requires an image that they process to be of a certain dimension. The Resnet models require, for exmple, that the image to be 224x224 pixels in dimension while the Alexnet model requires the image to be 227x227 pixels.
 3. **extractPixels()**: Extracts the pixels from the resized image input.
 4. **featurizeImage()**: Runs that data through the DNN pretrained model. At this point, the image has been loaded, resized to the correct proportions, and the pixels extracted. The result set of this API is still in an internal format.
-5. **rxFeaturize()**: Dormats the results from featurizeImage() into a dataframe and returns that dataframe. The dataframe returned contains the feature vector of the original set of images.
+5. **rxFeaturize()**: Formats the results from featurizeImage() into a dataframe and returns that dataframe. The dataframe returned contains the feature vector of the original set of images.
 
 ### Sample pre-requisites
 
