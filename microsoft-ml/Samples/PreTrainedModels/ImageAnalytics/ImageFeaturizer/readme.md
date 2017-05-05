@@ -78,9 +78,10 @@ Here is the scenario this sample addresses: You have a catalog of images in a re
 The procedure for finding the best match has the following steps:
 - Locate the images in the catalogue and get their feature vectors.
 - Locate the new image and get its feature vector.
-- Find out which image or set of images from the catalog has the smallest "distance" from the new image. There are a number of ways to calculate this distance. A simple one is the Euclidean distance, that we'll show in this sample.
+- Find out which image or set of images from the catalog has the smallest "distance" from the new image. There are a number of ways to calculate this distance. A simple one is the Euclidean distance, which we use in this sample.
 
 In this sample, our intial catalog consists a set of pictures of fish and helicopters.
+
 First, create a dataframe with the locations of these images:
 
 ```R
@@ -145,6 +146,7 @@ Thirdly, compare the new image with the images in the catalogue to find the best
 We have 2 sets of feature vectors: 
 - **imageFeatureVectorDF** contains the feature vectors for the catalog images; 
 - **imageToMatchDF** contains the feature vector of the new image to be compared.
+
 The best match is defined (for our purposes) as the image pair with the least Euclidean distance between their image feature vectors where one of the feature vectors is for the new image. We implement these calculations using R's builtin **dist()** function.
 
 ```R  
