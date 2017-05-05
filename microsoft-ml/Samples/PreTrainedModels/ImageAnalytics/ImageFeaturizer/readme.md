@@ -2,24 +2,24 @@
 
 ## What is Image Featurization
 
-Image featurization is the process by which given an image as input, a numeric vector (aka feature vector) that represents key characteristics (features) of that image is produced. The extraction of the features is done via an image featurizer that uses a pretrained Deep Neural Net model. 
+Image featurization is the process that takes an image as input and produces a numeric vector (aka feature vector) that represents key characteristics (features) of that image. The features are extracted with an image-featurizing transform that uses a pretrained Deep Neural Net model. 
 
-Image featurization here is accomplished by using sophisticated DNN (Deep Neural Net) models that had already been pretrained on millions of images. As of this writing, we support 4 types of image featurization pretrained models:
+Image featurization here is accomplished by using sophisticated DNN (Deep Neural Net) models that have already been pretrained on millions of images. Currently, we support four types of image featurization pretrained models:
 1. Resnet-18
-1. Resnet-50
-1. Resnet-110
-1. Alexnet
+2. Resnet-50
+3. Resnet-110
+4. Alexnet
 
-Each model has its own set of strengths and weaknesses. The user will need to try each of these models on which would fit best in their scenario.
+Each model has its own set of strengths and weaknesses. The user can experiment with each of these models to decide which of them best handles their scenario.
 
 The sample code here shows how to use these models.
 
 ## How can Image Featurization be used
 
-We showcase 2 common usage scenarios of the pretrained image featurization model.
-1. **Finding similar images**: Say you had a catalog of images. Then, given an input image, find out all the images in the catalog that are most similar to the given image. This scenario is the most straightforward scenario but may not be relevant to all scenarios.
+We showcase two common usage scenarios for the pretrained image featurization model:
+1. **Find similar images**: Compare a specified image to a catalogue of images to determine which of the images in the catalog are similar to the image provided. 
 
-2. **Training a custom model**: This scenario is especially useful when there's need to train an image analytics model that is very specific to some problem domain. In such a scenario, the feature vector from training images is used to train another machine learning model.
+2. **Train a custom model**: This scenario is especially useful when there's need to train an image analytics model that is very specific to a particular problem domain. In such a scenario, the feature vector from training images is used to train another machine learning model.
 
 The code used to get a feature vector, given one or more images, is typically as follows:
 
@@ -39,16 +39,16 @@ imageFeatureVector <- rxFeaturize(
   ))
 ```
 
-There  are 5 key APIs at play here. 4 of these APIs are values to the **mlTransforms** parameter while the 5th API is **rxFeaturize()**. We'll describe what each API does, in the order its used.
-1. **loadImage()**: This API is used to load the image into the image featurization pipeline. In this specific example, we're telling the API to use the value in the Image column of the dataframe specified for the **data** parameter. And then, to name the resulting internal representation as "Features".
-1. **resizeImage()**: As mentioned previously, currently 4 pretrained models are supported. Each of these models require the image they process to be of a certain dimension. Eg. the Resnet models require the image to be 224x224 pixels in dimension. While the Alexnet model requires the image to be 227x227 pixels. The resizeImage() API therefore ensures that irrespective of the original dimensions of the input image(s), that they get resized to the dimensions required by the model.
-1. **extractPixels()**: This API extracts the pixels from the input, and by now resized image.
-1. **featurizeImage()**: At this point, the image has been loaded, resized to the correct proportions, and the pixels extracted. The feaurizeImage() API is the one that now runs that data through the DNN pretrained model. The result set of this API is still in an internal format.
-1. **rxFeaturize()**: rxFeaturize() takes the results from featurizeImage() and formats it into a dataframe and returns that dataframe. That dataframe now contains the feature vector of the original set of images.
+There  are five key APIs at play here. Four of these APIs are input parameter values for the **mlTransforms**. The fifth API is **rxFeaturize()**. Here are brief descriptions of what each of these APIs does:
+1. **loadImage()**: Loads the image into the image featurization pipeline. In this example, the code says use the value in the Image column of the dataframe specified for the **data** parameter and name the resulting internal representation "Features".
+2. **resizeImage()**: Ensures that the images get resized to the dimensions required by the model used, irrespective of the original dimensions of the input images. Each of the four pretrained models supported requires an image that they process to be of a certain dimension. The Resnet models require, for exmple, that the image to be 224x224 pixels in dimension while the Alexnet model requires the image to be 227x227 pixels.
+3. **extractPixels()**: Extracts the pixels from the resized image input.
+4. **featurizeImage()**: Runs that data through the DNN pretrained model. At this point, the image has been loaded, resized to the correct proportions, and the pixels extracted. The result set of this API is still in an internal format.
+5. **rxFeaturize()**: Dormats the results from featurizeImage() into a dataframe and returns that dataframe. The dataframe returned contains the feature vector of the original set of images.
 
 ### Sample pre-requisites
 
-There is a section of code in the samples to make sure that the working directory is setup correctly. If this is not done right, the samples will not work correctly. Specifically, if the image featurizer does not find the images to featurize, then the samples will fail to run correctly.
+There is a section of code in the samples that make sure the working directory is setup correctly. If this is not set up correctly, the samples will not work correctly. Specifically, if the image featurizer does not find the images to featurize, then the samples will fail to run correctly.
 
 ```R
 ## TODO!! 
