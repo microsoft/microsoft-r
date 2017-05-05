@@ -48,20 +48,20 @@ There  are five key APIs at play here. Four of these APIs are input parameter va
 
 ### Sample pre-requisites
 
-There is a section of code in the samples that make sure the working directory is setup correctly. If this is not set up correctly, the samples will not work correctly. Specifically, if the image featurizer does not find the images to featurize, then the samples will fail to run correctly.
+There is a section of code in the samples that make sure the working directory is setup correctly. If this is not set up correctly, the samples will not execute. Specifically, if the image featurizer does not find the images to featurize, then the samples will fail to run correctly.
 
 ```R
 ## TODO!! 
 ## Change NA to the actual location of the script. Use the absolute path.
 workingDir <- NA
 ```
-Change **NA** to the full path of your working directory first.
+Change **NA** in this code to the full (absolute) path of your working directory.
 
-If you forget to change **NA** to a relevant path, then this code will throw an error.
+If you do not change **NA** to a valid path that locates the script, this code throws an error.
 
 ```R
 if (is.na(workingDir)){
-  stop("Please make sure to set the working directory correctly. It should be the location of the script.")
+  stop("The working directory needs to be set to the location of the script.")
 }
 
 # Check if the working directory exists
@@ -72,17 +72,16 @@ if (dir.exists(workingDir)){
 }
 ```
 
-### Sample1: Finding similar images
-The basic scenario of this sample is as follows. You have a catalog of images in your repository. As you get a new image, you want to find out from your catalog the closet match to this new image.
+### Sample1: Find similar images
+Here is the scenario this sample addresses: You have a catalog of images in a repository. When you get a new image, you want to find the image from your catalog that most closely matches this new image.
 
-The way you'd go about this is via the following steps:
-- Get the corresponding feature vectors of the images in the catalog and associate them with the source images in the catalog.
-- Get the feature vector of the new image.
+The procedure for finding the best match has the following steps:
+- Locate the images in the catalogue and get their feature vectors.
+- Locate the new image and get its feature vector.
 - Find out which image or set of images from the catalog has the smallest "distance" from the new image. There are a number of ways to calculate this distance. A simple one is the Euclidean distance, that we'll show in this sample.
 
-In this sample, our intial catalog is a set of pictures of fish and helicopters. So let's go ahead and get the corresponding feature vectors of these catalog images.
-
-First we'll create a dataframe with the location of these images:
+In this sample, our intial catalog consists a set of pictures of fish and helicopters.
+First, create a dataframe with the locations of these images:
 
 ```R
 # Set the location of the images
@@ -99,7 +98,7 @@ images <- c(file.path(imageLocation, "Fish/Fish1.jpg"),
 imageDF <- data.frame(Image = images, stringsAsFactors = FALSE)
 ```
 
-Now let's get the corresponding feature vector of the catalog images into a dataframe:
+Then, get the corresponding feature vectors for each of the catalog images into a dataframe:
 
 ```R
 # Get the feature vectors of the images
@@ -119,7 +118,7 @@ imageFeatureVectorDF <- rxFeaturize(
   ))
 ```
 
-Now let's get the feature vector of the new image:
+Secondly, create a dataframe with the location of the new image to match and get its feature vector into a dataframe:
 
 ```R
 # Now, given an image, the task is to find the best matching image 
@@ -142,9 +141,11 @@ imageToMatchDF <- rxFeaturize(
   ))
 ```
 
-So, at this point we have 2 sets of feature vectors: **imageFeatureVectorDF** contains the feature vector of the catalog images; **imageToMatchDF** contains the feature vector of the new vector.
-
-The next step now is to find an image from the catalog that matches the new image. We'll use R's builtin **dist()** function to help us calculate the Euclidean distance between all these image feature vectors.
+Thirdly, compare the new image with the images in the catalogue to find the best match. 
+We have 2 sets of feature vectors: 
+- **imageFeatureVectorDF** contains the feature vectors for the catalog images; 
+- **imageToMatchDF** contains the feature vector of the new image to be compared.
+The best match is defined (for our purposes) as the image pair with the least Euclidean distance between their image feature vectors where one of the feature vectors is for the new image. We implement these calculations using R's builtin **dist()** function.
 
 ```R  
 # Next we'll calculate the Euclidean distance between the image and all the other images
@@ -152,9 +153,11 @@ The next step now is to find an image from the catalog that matches the new imag
 distVals <- dist(rbind(imageFeatureVectorDF, imageToMatchDF)[,-1], "euclidean")
 ```
 
-Since the 1st column of the dataframe is the image location, we ignore the first column ```[,-1]```.
+Note that the first column of the dataframe is ignored since it is used to locate the images. This parameter ikn the **dist()** function encodes this instruction:
 
-Now, the resultset distVals looks like this:
+```[,-1]```
+
+Now, the resultset **distVals** should look like this:
 
 Distance With | 1 | 2 | 3 | 4 
 --|---|---|---|---
@@ -163,52 +166,57 @@ Distance With | 1 | 2 | 3 | 4
 4 | 26.98798 | 130.63937 | 74.19111 | NA          
 5 | 112.88821 | 113.06911 | 120.94154 | 127.79847
 
-Row 5 is the 5th image, that is the new image that we want matched against.
-(NOTE: The actual values can change depending on the machine its run on, but the relationship between the values should be the same)
+Row 5 contains the feature vector distances between the new image and the other images in the catalogue.
+(NOTE: The actual values can change slightly depending on the machine used to run the code, but the order relations between the distance values should be invarient.)
 
-So this code extracts that row and finds the minimum value, ie smallest distance. Thereby indicating which image from the catalog matches the new image:
+Finally, this code finds the image from the catalog that best matches the new image by extracting the minimum value (and so least feature vector distance) from the fifth row that contains the relevant comparisons with the new image to match.
 
 ```R
 # Here's the euclidean distance between the image of interest and the
-# set to be matched against
+# set to be matched against.
 i <- attr(distVals, "Size")
 eucDist <- as.matrix(distVals)[i, -i]
 
-# Let's get the closest match
+# Let's get the closest match,
 # ie the image with the smallest Euclidean distance from 
-# our image of interest
+# our image of interest.
 matchedImage <- imageDF[which.min(eucDist),]
 cat(paste("The closest matching image is: ", matchedImage))
 ```
 
-And the result will look as so:
+The output specifies the best match:
 
 ```R
 The closest matching image is:  Data/Pictures/Fish/Fish1.jpg
 ```
 
-### Sample2: Train a custom image recognition model
+### Sample2: Train a model to classify images 
+Here is the scenario this sample addresses: train a model to classify or recognize the type of an image using labeled observations from a training set provided. Specifically, this sample trains a multiclass linear model using the **rxLogisticRegression** algorithm to distinguish between fish, helicopter and fighter jet images. The multiclass training task uses the feature vectors of the images from the training set to learn how to classify these images.
 
-In this sample, we'll train a model to classify the type of an image by training a model using the feature vector of images from a training set.
+The procedure for training the model has the following steps:
+- Locate the images to use in the training set and get their feature vectors.
+- Label the images in the training set by type.
+- Train a multiclass classifier using the **rxLogisticRegression** algorithm.
+- Specify a new image not in the training set to classify and use the trained model to predict its type.
 
-The method for obtaining the feature vectors of the images is exactly the same as the previous sample, so we won't go through those here.
+First, the method for obtaining the feature vectors of the images is exactly the same as provided for sample1 and so are not repeated here.
 
-In this sample, we'll train a multiclass linear model to distinguish between fish, helicopter and fighter jet images. So to the dataframe containing the location of the training images, we'll add a Type column and a numeric Label column to indicate the class of the image.
+Secondly, add a **Type** column and a numeric **Label** column to indicate the class of the images in the training set.
 
 ```R
-# Let's add the image type
+# Let's add the image type.
 imagesDF$Type <- c("Fish","Fish","Fish","Fish","Fish",
                    "Helicopter","Helicopter","Helicopter","Helicopter","Helicopter",
                    "FighterJet","FighterJet","FighterJet","FighterJet","FighterJet")
 
-# Now since we're going to train on these images, we need to have a label
+# Now since we're going to train on these images, we need to have a label.
 # for each type that is a numeric value
 imagesDF$Label[imagesDF$Type == "Fish"] <- 0
 imagesDF$Label[imagesDF$Type == "Helicopter"] <- 1
 imagesDF$Label[imagesDF$Type == "FighterJet"] <- 2
 ```
 
-Now let's traing a multiclass classifier using the **rxLogisticRegression** algorithm. Just for kicks, and to compare from the previous sample, we'll use the Resnet-50 model.
+Thirdly, train a multiclass classifier using the **rxLogisticRegression** algorithm. Just for kicks, and to compare from the previous sample, we'll use the Resnet-50 model.
 
 ```R
 # Now let's train a multiclass model using the image set we have
@@ -227,16 +235,16 @@ imageModel <- rxLogisticRegression(
 
 Note that ```type = "multiClass"``` indicates that this is a multiclass training task.
 
-Now let's give it an image to classify. Note that this image was not part of the original training set. See the actual code for details.
+Finally, let's give it an image and its feature vector to classify. Note that this image was not part of the original training set. See the actual code for details.
 
 ```R
 imageFile <- c(file.path(imageLocation, "FighterJet/FighterJet6.jpg"))
 ```
 
-Now that we have the model, and after getting the feature vector of the image we want to classify, let's predict the type of the image.
+Now use the model to predict the type of the image:
 
 ```R
-# Let's use the trained model to predict the type of image
+# Let's use the trained model to predict the type of image.
 prediction <- rxPredict(imageModel, data = imageToMatch, extraVarsToWrite = list("Label", "Image"))
 
 # And the type of image is?
@@ -244,7 +252,7 @@ typeOfImage <- imagesDF$Type[which(imagesDF$Label == prediction$PredictedLabel)[
 cat(paste("The image is of type: ", typeOfImage))
 ```
 
-And the result is?
+The result is:
 
 ```R
 The image is of type:  FighterJet
