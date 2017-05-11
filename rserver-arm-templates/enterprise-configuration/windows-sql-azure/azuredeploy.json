@@ -368,9 +368,9 @@
           {
             "name": "Profile1",
             "capacity": {
-              "minimum": "2",
+              "minimum": "[parameters('webNodeInstanceCount')]",
               "maximum": "100",
-              "default": "2"
+              "default": "[parameters('webNodeInstanceCount')]"
             },
             "rules": [
               {
@@ -520,9 +520,9 @@
           {
             "name": "Profile1",
             "capacity": {
-              "minimum": "2",
+              "minimum": "[parameters('computeNodeInstanceCount')]",
               "maximum": "100",
-              "default": "2"
+              "default": "[parameters('computeNodeInstanceCount')]"
             },
             "rules": [
               {
