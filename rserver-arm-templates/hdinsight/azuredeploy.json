@@ -1,0 +1,188 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01-preview/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the HDInsight cluster to create."
+      }
+    },
+    "clusterLoginUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "These credentials can be used to submit jobs to the cluster and to log into cluster dashboards."
+      }
+    },
+    "clusterLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."
+      }
+    },
+    "sshUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "These credentials can be used to remotely access the cluster."
+      }
+    },
+    "authenticationType": {
+      "type": "string",
+      "defaultValue": "password",
+      "allowedValues": [ "password", "sshPublicKey" ],
+      "metadata": {
+        "description": "Authentication to use for System Administrator."
+      }
+    },
+    "sshPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password must be at least 10 characters in length and must contain at least one digit, one non-alphanumeric character, and one upper or lower case letter."
+      }
+    },
+    "sshKey": {
+      "defaultValue": "",
+      "type": "securestring",
+      "metadata": {
+        "description": "SSH Key for System Administrator"
+      }
+    },
+    "clusterWorkerNodeCount": {
+      "type": "int",
+      "defaultValue": 4,
+      "metadata": {
+        "description": "The number of nodes in the HDInsight cluster."
+      }
+    }
+  },
+  "variables": {
+    "storageAccountName": "[concat(parameters('clusterName'), uniquestring(resourceGroup().id))]",
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
+    "defaultApiVersion": "2016-01-01",
+    "clusterApiVersion": "2015-03-01-preview",
+    "linuxOperatingSystemProfile": "[variables(concat('linuxOperatingSystemProfile', parameters('authenticationType')))]",
+    "linuxOperatingSystemProfilepassword": {
+      "username": "[parameters('sshUserName')]",
+      "password": "[parameters('sshPassword')]"
+    },
+    "linuxOperatingSystemProfilesshPublicKey": {
+      "username": "[parameters('sshUserName')]",
+      "sshProfile": {
+        "publicKeys": [
+          {
+            "certificateData": "[parameters('sshKey')]"
+          }
+        ]
+      }
+    }
+  },
+  "resources": [
+    {
+      "name": "[variables('storageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('defaultApiVersion')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage",
+      "properties": {
+      }
+    },
+    {
+      "name": "[parameters('clusterName')]",
+      "type": "Microsoft.HDInsight/clusters",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('clusterApiVersion')]",
+      "dependsOn": [ "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountName'))]" ],
+      "tags": {},
+      "properties": {
+        "clusterVersion": "3.5",
+        "osType": "Linux",
+        "tier": "standard",
+        "clusterDefinition": {
+          "kind": "rserver",
+          "configurations": {
+            "gateway": {
+              "restAuthCredential.isEnabled": true,
+              "restAuthCredential.username": "[parameters('clusterLoginUserName')]",
+              "restAuthCredential.password": "[parameters('clusterLoginPassword')]"
+            },
+            "rserver": {
+              "rstudio": true
+            }
+          }
+        },
+        "storageProfile": {
+          "storageaccounts": [
+            {
+              "name": "[replace(replace(concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), variables('defaultApiVersion')).primaryEndpoints.blob),'https:',''),'/','')]",
+              "isDefault": true,
+              "container": "[parameters('clusterName')]",
+              "key": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), variables('defaultApiVersion')).keys[0].value]"
+            }
+          ]
+        },
+        "computeProfile": {
+          "roles": [
+            {
+              "name": "headnode",
+              "targetInstanceCount": 2,
+              "hardwareProfile": {
+                "vmSize": "Standard_D12_v2"
+              },
+              "osProfile": {
+                "linuxOperatingSystemProfile": "[variables('linuxOperatingSystemProfile')]"
+              }
+            },
+            {
+              "name": "workernode",
+              "targetInstanceCount": "[parameters('clusterWorkerNodeCount')]",
+              "hardwareProfile": {
+                "vmSize": "Standard_D4_v2"
+              },
+              "osProfile": {
+                "linuxOperatingSystemProfile": "[variables('linuxOperatingSystemProfile')]"
+              }
+            },
+            {
+              "name": "zookeepernode",
+              "minInstanceCount": 1,
+              "targetInstanceCount": 3,
+              "hardwareProfile": {
+                "vmSize": "Medium"
+              },
+              "osProfile": {
+                "linuxOperatingSystemProfile": "[variables('linuxOperatingSystemProfile')]"
+              }
+            },
+            {
+              "name": "edgenode",
+              "minInstanceCount": 1,
+              "targetInstanceCount": 1,
+              "hardwareProfile": {
+                "vmSize": "Standard_D4_V2"
+              },
+              "osProfile": {
+                "linuxOperatingSystemProfile": "[variables('linuxOperatingSystemProfile')]"
+              },
+              "scriptActions": [
+                {
+                  "name": "edgenodeonebox",
+                  "uri": "[concat(variables('scriptsUri'), 'Configure-OneBox.sh')]",
+                  "parameters": "[parameters('clusterLoginPassword')]"             
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "cluster": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.HDInsight/clusters',parameters('clusterName')))]"
+    }
+  }
+}

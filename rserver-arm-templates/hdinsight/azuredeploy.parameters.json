@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01-preview/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"clusterName": {
+			"value": "rservertest"
+		},
+		"clusterLoginUserName": {
+			"value": "azureuser"
+		},
+		"clusterLoginPassword": {
+			"value": "<your password>"
+		},
+		"sshUserName": {
+			"value": "sshuser"
+		},
+		"authenticationType": {
+			"value": "password"
+		},
+		"sshPassword": {
+			"value": "<your password>"
+		},
+        "sshKey": {
+			"value": ""
+		},
+		"clusterWorkerNodeCount": {
+			"value": 1
+		}
+	}
+}
