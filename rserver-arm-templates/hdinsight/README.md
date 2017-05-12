@@ -12,7 +12,7 @@ This template deploys a R Server on HDInsight cluster with edgenode as One-Box.
 
 Instructions to use R Server Operationalization are provided [here](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-r-server-get-started#using-microsoft-r-server-operationalization)
 
-After setting up SSH tunnel, you can remoteLogin() using the following command : 
+After setting up SSH tunnel using the above documentation, you can remoteLogin() using the following command : 
 
 ```R
 remoteLogin("http://localhost:12800", username = "admin", password = "Microsoft@2017")
