@@ -49,9 +49,7 @@ Sample Powershell code to generate .pfx (replace <certname> and <password> with 
 $certFolder = "C:\certificates"
 $certFilePath = "$certFolder\certFile.pfx"
 $certStartDate = (Get-Date).Date
-certStartDateStr = $certStartDate.ToString("MM/dd/yyyy")
 $certEndDate = $certStartDate.AddYears(10)
-$certEndDateStr = $certEndDate.ToString("MM/dd/yyyy")
 $certName = "<certname>"
 $certPassword = "<certPassword>"
 $certPasswordSecureString = ConvertTo-SecureString $certPassword -AsPlainText -Force
