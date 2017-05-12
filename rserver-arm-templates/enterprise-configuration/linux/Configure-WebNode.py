@@ -32,3 +32,15 @@ json.dump(data, f, indent=4, sort_keys=False)
 f.close()
 
 os.system("/usr/local/bin/dotnet /usr/lib64/microsoft-r/rserver/o16n/9.1.0/Microsoft.RServer.Utils.AdminUtil/Microsoft.RServer.Utils.AdminUtil.dll -silentwebnodeinstall \"" + password + "\"")
+
+if linuxOS == "Ubuntu":
+    os.system("apt-get install -y nginx")
+    os.system("sed -i 's%# pass the PHP scripts%location /ping { return 200 \"hello\"; }#%g' /etc/nginx/sites-enabled/default")
+    os.system("service nginx start")
+    os.system("update-rc.d nginx defaults")
+else:    
+    os.system("yum install -y epel-release")
+    os.system("yum install -y nginx")
+    os.system("sed -i 's#location / {#location /ping { return 200 \"hello\";#g' /etc/nginx/nginx.conf")
+    os.system("systemctl start nginx")
+    os.system("systemctl enable nginx")
