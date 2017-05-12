@@ -169,8 +169,7 @@
               "scriptActions": [
                 {
                   "name": "edgenodeonebox",
-                  "uri": "[concat(variables('scriptsUri'), 'Configure-OneBox.sh')]",
-                  "parameters": "[parameters('clusterLoginPassword')]"             
+                  "uri": "[concat(variables('scriptsUri'), 'Configure-OneBox.sh')]"
                 }
               ]
             }
