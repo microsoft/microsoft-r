@@ -8,6 +8,5 @@
 </a>
 
 
-
 This template deploys a R Server on HDInsight cluster with edgenode as One-Box.
-Instructions to use R Server Operationalization are provided here(https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-r-server-get-started#using-microsoft-r-server-operationalization)
+Instructions to use R Server Operationalization are provided [here](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-r-server-get-started#using-microsoft-r-server-operationalization)
