@@ -14,6 +14,7 @@ loanDataModel <- rxDForest(is_bad ~ revol_util + loan_amnt + int_rate + mths_sin
 
 # Scoring Function
 loanPredictService <- function(revol_util, int_rate, loan_amnt, mths_since_last_record, annual_inc_joint, dti_joint, total_rec_prncp, all_util) {
+  library(RevoScaleR)
   inputData <- data.frame(revol_util = revol_util, loan_amnt = loan_amnt,int_rate = int_rate, mths_since_last_record = mths_since_last_record, annual_inc_joint = annual_inc_joint, dti_joint = dti_joint, total_rec_prncp = total_rec_prncp, all_util = all_util)
   prediction <- rxPredict(loanDataModel, inputData)
   loanScore <- prediction$is_bad_Pred 
