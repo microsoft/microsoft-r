@@ -20,4 +20,4 @@ remoteLogin("http://localhost:12800", username = "admin", password = "Microsoft@
 
 and start [Publishing Web Services](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/data-scientist-manage-services).
 
-NOTE : Initial password for edgenode onebox is "Microsoft@2017". If you wish to change the password, ssh into the edgenode <clustername>-ed-ssh.azurehdinsight.net and (run Administrator Utility to update password)[https://msdn.microsoft.com/en-us/microsoft-r/operationalize/admin-utility#setupdate-local-administrator-password]
+NOTE : Initial password for edgenode onebox is "Microsoft@2017". If you wish to change the password, ssh into the edgenode <clustername>-ed-ssh.azurehdinsight.net and [run Administrator Utility to update password](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/admin-utility#setupdate-local-administrator-password)
