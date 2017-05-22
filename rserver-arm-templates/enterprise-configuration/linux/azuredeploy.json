@@ -387,7 +387,9 @@
                   "settings": {
                     "fileUris": [
                       "[concat(variables('scriptsUri'), 'Configure-WebNode.py')]",
-                      "[concat(variables('scriptsUri'), 'merged.pfx')]"                      
+                      "[concat(variables('scriptsUri'), 'merged.pfx')]",
+                      "[concat(variables('scriptsUri'), 'InstallCert.csproj')]",
+                      "[concat(variables('scriptsUri'), 'Program.cs')]"                      
                     ]
                   },
                   "typeHandlerVersion": "1.4",
