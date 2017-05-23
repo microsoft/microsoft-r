@@ -11,8 +11,8 @@ aadTenant=sys.argv[3]
 aadClientId=sys.argv[4]
 sqlServerConnectionString=sys.argv[5]
 
-os.system("dotnet restore")
-os.system("dotnet run")
+os.system("/usr/local/bin/dotnet restore")
+os.system("/usr/local/bin/dotnet run")
 
 appSettingsFilePath = "/usr/lib64/microsoft-r/rserver/o16n/9.1.0/Microsoft.RServer.WebNode/appsettings.json"
 data = json.loads(open(appSettingsFilePath, "r").read().decode("utf-8-sig").encode("utf-8").replace("\r\n",""), object_pairs_hook=OrderedDict)
