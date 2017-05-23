@@ -14,12 +14,13 @@ aadClientId=sys.argv[4]
 sqlServerConnectionString=sys.argv[5]
 
 if linuxOS == "Ubuntu":
+    os.system("apt-get -y upgrade")
     os.system("apt-get install -y nginx")
     os.system("sed -i 's%# pass the PHP scripts%location /ping { return 200 \"hello\"; }#%g' /etc/nginx/sites-enabled/default")
     os.system("service nginx start")
     os.system("update-rc.d nginx defaults")
 else:
-    os.system("yum upgrade")    
+    os.system("yum -y upgrade")    
     os.system("yum install -y epel-release")
     os.system("yum install -y nginx")
     os.system("sed -i 's#location / {#location /ping { return 200 \"hello\";#g' /etc/nginx/nginx.conf")
@@ -44,7 +45,7 @@ data["BackEndConfiguration"]["Uris"]["Ranges"] =  ["http://10.0.1.0-255:12805"]
 data["Authentication"]["JWTSigningCertificate"]["Enabled"] = True
 data["Authentication"]["JWTSigningCertificate"]["StoreName"] = "Root"
 data["Authentication"]["JWTSigningCertificate"]["StoreLocation"] = "CurrentUser"
-data["Authentication"]["JWTSigningCertificate"]["SubjectName"] = "CN=RAMBO"
+data["Authentication"]["JWTSigningCertificate"]["SubjectName"] = "CN=LOCALHOST"
 
 if aadTenant != "":
     data["Authentication"]["AzureActiveDirectory"]["Authority"] = "https://login.windows.net/" + aadTenant
