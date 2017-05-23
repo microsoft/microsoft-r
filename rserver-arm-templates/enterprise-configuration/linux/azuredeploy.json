@@ -389,6 +389,7 @@
                       "[concat(variables('scriptsUri'), 'Configure-WebNode.py')]",
                       "[concat(variables('scriptsUri'), 'merged.pfx')]",
                       "[concat(variables('scriptsUri'), 'project.json')]",
+                      "[concat(variables('scriptsUri'), 'root.csproj')]",
                       "[concat(variables('scriptsUri'), 'Program.cs')]"                      
                     ]
                   },
