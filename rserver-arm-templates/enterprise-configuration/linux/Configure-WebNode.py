@@ -12,6 +12,8 @@ aadTenant=sys.argv[3]
 aadClientId=sys.argv[4]
 sqlServerConnectionString=sys.argv[5]
 
+os.environ["HOME"] = "/root"
+
 p = subprocess.Popen(["/usr/local/bin/dotnet", "restore"], cwd=".")
 p.wait()
 p = subprocess.Popen(["/usr/local/bin/dotnet", "run"], cwd=".")
