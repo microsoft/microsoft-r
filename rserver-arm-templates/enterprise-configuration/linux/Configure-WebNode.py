@@ -3,6 +3,7 @@
 import sys
 import json
 import os
+import subprocess
 from collections import OrderedDict
 
 linuxOS=sys.argv[1]
@@ -11,8 +12,10 @@ aadTenant=sys.argv[3]
 aadClientId=sys.argv[4]
 sqlServerConnectionString=sys.argv[5]
 
-os.system("/usr/local/bin/dotnet restore")
-os.system("/usr/local/bin/dotnet run")
+p = subprocess.Popen(["/usr/local/bin/dotnet", "restore"], cwd=".")
+p.wait()
+p = subprocess.Popen(["/usr/local/bin/dotnet", "run"], cwd=".")
+p.wait()
 
 appSettingsFilePath = "/usr/lib64/microsoft-r/rserver/o16n/9.1.0/Microsoft.RServer.WebNode/appsettings.json"
 data = json.loads(open(appSettingsFilePath, "r").read().decode("utf-8-sig").encode("utf-8").replace("\r\n",""), object_pairs_hook=OrderedDict)
