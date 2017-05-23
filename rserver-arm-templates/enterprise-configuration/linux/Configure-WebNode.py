@@ -18,7 +18,8 @@ if linuxOS == "Ubuntu":
     os.system("sed -i 's%# pass the PHP scripts%location /ping { return 200 \"hello\"; }#%g' /etc/nginx/sites-enabled/default")
     os.system("service nginx start")
     os.system("update-rc.d nginx defaults")
-else:    
+else:
+    os.system("yum upgrade")    
     os.system("yum install -y epel-release")
     os.system("yum install -y nginx")
     os.system("sed -i 's#location / {#location /ping { return 200 \"hello\";#g' /etc/nginx/nginx.conf")
