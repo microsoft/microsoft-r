@@ -14,13 +14,17 @@ aadClientId=sys.argv[4]
 sqlServerConnectionString=sys.argv[5]
 
 if linuxOS == "Ubuntu":
-    os.system("apt-get -y upgrade")
     os.system("apt-get install -y nginx")
     os.system("sed -i 's%# pass the PHP scripts%location /ping { return 200 \"hello\"; }#%g' /etc/nginx/sites-enabled/default")
     os.system("service nginx start")
     os.system("update-rc.d nginx defaults")
+elif linuxOS == "RedHat":
+    os.system("yum -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm")    
+    os.system("yum install -y nginx")
+    os.system("sed -i 's#location / {#location /ping { return 200 \"hello\";#g' /etc/nginx/nginx.conf")
+    os.system("systemctl start nginx")
+    os.system("systemctl enable nginx")
 else:
-    os.system("yum -y upgrade")    
     os.system("yum install -y epel-release")
     os.system("yum install -y nginx")
     os.system("sed -i 's#location / {#location /ping { return 200 \"hello\";#g' /etc/nginx/nginx.conf")
