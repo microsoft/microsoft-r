@@ -19,7 +19,7 @@ if linuxOS == "Ubuntu":
     os.system("service nginx start")
     os.system("update-rc.d nginx defaults")
 elif linuxOS == "RedHat":
-    os.system("yum -y install http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm")    
+    os.system("yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")    
     os.system("yum install -y nginx")
     os.system("sed -i 's#location / {#location /ping { return 200 \"hello\";#g' /etc/nginx/nginx.conf")
     os.system("systemctl start nginx")
