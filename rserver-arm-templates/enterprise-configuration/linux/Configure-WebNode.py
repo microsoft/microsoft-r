@@ -26,6 +26,7 @@ elif linuxOS == "RedHat":
     os.system("sed -i 's#location / {#location /ping { return 200 \"hello\";#g' /etc/nginx/nginx.conf")
     os.system("systemctl start nginx")
     os.system("systemctl enable nginx")
+    os.system("iptables --flush")
 else:
     os.system("yum install -y epel-release")
     os.system("yum install -y nginx")
