@@ -1,0 +1,162 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "0.9.0.0",
+    "parameters": {
+         "clusterLoginUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "Cluster Login Name"
+            }
+        },
+        "clusterLoginPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Master Password"
+            }
+        },
+        "clusterWorkerNodeCount": {
+            "type": "int",
+            "defaultValue": 4,
+            "metadata": {
+                "description": "The number of worker nodes in the HDInsight cluster."
+            }
+        }
+    },
+    "variables": {
+        "clusterName": "[resourceGroup().name]",
+        "clusterKind": "RSERVER",
+        "sshUserName": "[parameters('clusterLoginUserName')]",
+        "sshPassword": "[parameters('clusterLoginPassword')]",
+        "storageAccountName": "[variables('uniqueNamePrefix')]",
+        "storageContainer": "[concat(uniquestring(resourceGroup().id), 'clstr')]",
+        "storageVersion": "2015-06-15",
+        "clusterStorageAccountType": "Standard_LRS",
+        "clusterVersion": "3.6",
+        "namePrefix": "[resourceGroup().name]",
+        "uniqueNamePrefix": "[toLower(concat(resourceGroup().name, uniqueString(subscription().subscriptionId)))]",
+        "location": "[resourceGroup().location]",
+        "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
+    },
+    "resources": [
+        {
+            "name": "[variables('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2015-06-15",
+            "location": "[variables('location')]",
+            "properties": {
+                "accountType": "Standard_LRS"
+            }
+        },
+        {
+            "apiVersion": "2015-03-01-preview",
+            "name": "[variables('clusterName')]",
+            "type": "Microsoft.HDInsight/clusters",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/',variables('storageAccountName'))]"
+            ],
+            "properties": {
+                "clusterVersion": "[variables('clusterVersion')]",
+                "osType": "Linux",
+                "tier": "standard",
+                "clusterDefinition": {
+                    "kind": "[variables('clusterKind')]",
+                    "configurations": {
+                        "gateway": {
+                            "restAuthCredential.isEnabled": true,
+                            "restAuthCredential.username": "[parameters('clusterLoginUserName')]",
+                            "restAuthCredential.password": "[parameters('clusterLoginPassword')]"
+                        },
+                        "rserver": {
+                            "rstudio": true
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "storageaccounts": [
+                        {
+                            "name": "[concat(variables('storageAccountName'),'.blob.core.windows.net')]",
+                            "isDefault": true,
+                            "container": "[variables ('storageContainer')]",
+                            "key": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), variables('storageVersion')).key1]"
+                        }
+                    ]
+                },
+                "computeProfile": {
+                    "roles": [
+                        {
+                            "name": "headnode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 2,
+                            "hardwareProfile": {
+                                "vmSize": "Standard_D12_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[variables('sshUserName')]",
+                                    "password": "[variables('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": null,
+                            "scriptActions": []
+                        },
+                        {
+                            "name": "workernode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": "[parameters('clusterWorkerNodeCount')]",
+                            "hardwareProfile": {
+                                "vmSize": "Standard_D4_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[variables('sshUserName')]",
+                                    "password": "[variables('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": null,
+                            "scriptActions": []
+                        },
+                        {
+                            "name": "zookeepernode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 3,
+                            "hardwareProfile": {
+                                "vmSize": "Medium"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[variables('sshUserName')]",
+                                    "password": "[variables('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": null,
+                            "scriptActions": []
+                        },
+                        {
+                            "name": "edgenode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 1,
+                            "hardwareProfile": {
+                                "vmSize": "Standard_D4_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[variables('sshUserName')]",
+                                    "password": "[variables('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": null,
+                            "scriptActions": [
+                                {
+                                    "name": "edgenodeonebox",
+                                    "uri": "[concat(variables('scriptsUri'), 'Configure-OneBox.sh')]",
+                                    "parameters": "[parameters('clusterLoginPassword')]"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
