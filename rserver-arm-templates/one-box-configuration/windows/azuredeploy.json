@@ -119,6 +119,20 @@
       "properties": {
         "securityRules": [
           {
+            "name": "Remote",
+            "properties": {
+              "description": "Allows Remote Desktop",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          },
+          {
             "name": "WebNode",
             "properties": {
               "description": "Allows WebNode traffic",
@@ -128,7 +142,7 @@
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",
-              "priority": 101,
+              "priority": 102,
               "direction": "Inbound"
             }
           }
