@@ -81,14 +81,19 @@
       "metadata": {
         "description": "Name of the existing VNET resource group"
       }
+    },
+    "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the subnet in the virtual network you want to use"
+      }
     }
   },
   "variables": {
     "storageAccountName": "[concat(parameters('dnsLabelPrefix'), uniquestring(resourceGroup().id))]",
     "nicName": "[concat(parameters('dnsLabelPrefix'), 'VMNic')]",
-    "subnetName": "[concat(parameters('dnsLabelPrefix'), 'Subnet')]",
     "vnetID": "[resourceId(parameters('existingVirtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('existingVirtualNetworkName'))]",
-    "subnetRef": "[concat(variables('vnetID'),'/subnets/', variables('subnetName'))]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('subnetName'))]",
     "publicIPAddressName": "[concat(parameters('dnsLabelPrefix'), 'PublicIP')]",
     "vmName": "[parameters('dnsLabelPrefix')]",
     "virtualNetworkName": "[concat(parameters('dnsLabelPrefix'), 'VNET')]",
