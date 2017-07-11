@@ -422,6 +422,11 @@
         "tier": "Standard",
         "capacity": "[parameters('webNodeInstanceCount')]"
       },
+      "plan": {
+        "name": "[variables('sku')]",
+        "publisher": "[variables('imagePublisher')]",
+        "product": "[variables('imageOffer')]"
+      },
       "properties": {
         "overprovision": false,
         "upgradePolicy": {
@@ -446,11 +451,6 @@
               "sku": "[variables('sku')]",
               "version": "latest"
             }
-          },
-          "plan": {
-            "name": "[variables('sku')]",
-            "publisher": "[variables('imagePublisher')]",
-            "product": "[variables('imageOffer')]"
           },
           "osProfile": {
             "computerNamePrefix": "WebNode",
@@ -595,6 +595,11 @@
         "tier": "Standard",
         "capacity": "[parameters('computeNodeInstanceCount')]"
       },
+      "plan": {
+        "name": "[variables('sku')]",
+        "publisher": "[variables('imagePublisher')]",
+        "product": "[variables('imageOffer')]"
+      },
       "properties": {
         "overprovision": false,
         "upgradePolicy": {
@@ -619,11 +624,6 @@
               "sku": "[variables('sku')]",
               "version": "latest"
             }
-          },
-          "plan": {
-            "name": "[variables('sku')]",
-            "publisher": "[variables('imagePublisher')]",
-            "product": "[variables('imageOffer')]"
           },
           "osProfile": {
             "computerNamePrefix": "CmptNode",
