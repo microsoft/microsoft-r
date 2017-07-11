@@ -80,7 +80,7 @@ remoteLogin("http://mlcontoso.eastus.cloudapp.azure.com",
 
 and start [Publishing Web Services](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/data-scientist-manage-services).
 
-NOTE : if Azure Active Directory is not used in the template, username is 'admin'. 
+**NOTE : if Azure Active Directory is not used in the template, username is 'admin'.**
 
 To connect to your cluster, use port 50000 for the first WebNode, 50001 for the second.
 
