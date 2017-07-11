@@ -148,7 +148,6 @@
   },
   "variables": {
     "namingInfix": "[toLower(substring(concat(parameters('dnsPrefix'), uniqueString(resourceGroup().id)), 0, 9))]",
-    "storageAccountType": "Standard_LRS",
     "newStorageAccountSuffix": "[concat(variables('namingInfix'), 'sa')]",
     "uniqueStringArray": [
       "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '0')))]",
@@ -160,10 +159,7 @@
     "saCount": "[length(variables('uniqueStringArray'))]",
     "vnetName": "vnet",
     "sqlvnetName": "sqlvnet",
-    "subnetName": "subnet",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
-    "sqlvnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('sqlvnetName'))]",
-    "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "publicIPAddressName": "PublicIP",
     "feSubnetName": "WebNodeSubnet",
     "beSubnetName": "ComputeNodeSubnet",
