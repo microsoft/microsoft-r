@@ -9,14 +9,6 @@
       },
       "maxLength": 61
     },
-    "windowsServerVersion": {
-      "type": "string",
-      "defaultValue": "2016",
-      "allowedValues": [ "2012R2", "2016" ],
-      "metadata": {
-        "description": "The Windows Server version for the VM"
-      }
-    },  
     "webNodeVMSku": {
       "type": "string",
       "defaultValue": "Standard_D2_v2",
@@ -194,7 +186,10 @@
     "appGwSubnetID": "[concat(variables('vnetID'),'/subnets/', variables('appGwSubnetName'))]",
     "appGwBackendPort": 80,
     "appGwBePoolName": "AppGatewayBePool",
-    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
+    "imagePublisher": "microsoft-ads",
+    "imageOffer": "windows-data-science-vm",
+    "sku": "windows2016"
   },
   "resources": [
     {
@@ -290,11 +285,16 @@
               "createOption": "FromImage"
             },
             "imageReference": {
-              "publisher": "MicrosoftRServer",
-              "offer": "[concat('RServer-WS', parameters('windowsServerVersion'))]",
-              "sku": "Enterprise",
+              "publisher": "[variables('imagePublisher')]",
+              "offer": "[variables('imageOffer')]",
+              "sku": "[variables('sku')]",
               "version": "latest"
             }
+          },
+          "plan": {
+            "name": "[variables('sku')]",
+            "publisher": "[variables('imagePublisher')]",
+            "product": "[variables('imageOffer')]"
           },
           "osProfile": {
             "computerNamePrefix": "WebNode",
@@ -347,8 +347,8 @@
                       "[concat(variables('scriptsUri'), 'Configure-WebNode.ps1')]"                      
                     ]
                   },
-                  "typeHandlerVersion": "1.8",
-                  "autoUpgradeMinorVersion": true,
+                  "typeHandlerVersion": "1.7",
+                  "autoUpgradeMinorVersion": false,
                   "protectedSettings": {
                     "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -sqlServerConnectionString \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=''', parameters('adminPassword'), ''';'), '\"')]"
                   },
@@ -457,11 +457,16 @@
               "createOption": "FromImage"
             },
             "imageReference": {
-              "publisher": "MicrosoftRServer",
-              "offer": "[concat('RServer-WS', parameters('windowsServerVersion'))]",
-              "sku": "Enterprise",
+              "publisher": "[variables('imagePublisher')]",
+              "offer": "[variables('imageOffer')]",
+              "sku": "[variables('sku')]",
               "version": "latest"
             }
+          },
+          "plan": {
+            "name": "[variables('sku')]",
+            "publisher": "[variables('imagePublisher')]",
+            "product": "[variables('imageOffer')]"
           },
           "osProfile": {
             "computerNamePrefix": "CmptNode",
@@ -499,8 +504,8 @@
                       "[concat(variables('scriptsUri'), 'Configure-ComputeNode.ps1')]"                      
                     ]
                   },
-                  "typeHandlerVersion": "1.8",
-                  "autoUpgradeMinorVersion": true,
+                  "typeHandlerVersion": "1.7",
+                  "autoUpgradeMinorVersion": false,
                   "protectedSettings": {
                     "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-ComputeNode.ps1 -poolInitialSize \"', parameters('poolInitialSize'), '\" -poolMaxSize \"', parameters('poolMaxSize'), '\"')]"
                   },

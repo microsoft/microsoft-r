@@ -76,7 +76,10 @@
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
     "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
     "scriptFileName": "Configure-Onebox.ps1",
-    "scriptParameters": "[concat(' -password \"', parameters('adminPassword'), '\"')]"
+    "scriptParameters": "[concat(' -password \"', parameters('adminPassword'), '\"')]",
+    "imagePublisher": "microsoft-ads",
+    "imageOffer": "windows-data-science-vm",
+    "sku": "windows2016"
   },
   "resources": [
     {
@@ -204,9 +207,9 @@
         "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
       "plan": {
-        "name": "windows2016",
-        "publisher": "windows-data-science-vm",
-        "product": "microsoft-ads"
+        "name": "[variables('sku')]",
+        "publisher": "[variables('imagePublisher')]",
+        "product": "[variables('imageOffer')]"
       },
       "properties": {
         "hardwareProfile": {
@@ -219,9 +222,9 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "microsoft-ads",
-            "offer": "windows-data-science-vm",
-            "sku": "windows2016",
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[variables('sku')]",
             "version": "latest"
           },
           "osDisk": {
@@ -235,7 +238,7 @@
           "dataDisks": [
             {
               "name": "datadisk1",
-              "diskSizeGB": "100",
+              "diskSizeGB": 100,
               "lun": 0,
               "vhd": {
                 "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob, 'vhds/datadisk1.vhd')]"
@@ -253,7 +256,7 @@
         },
         "diagnosticsProfile": {
           "bootDiagnostics": {
-            "enabled": "true",
+            "enabled": true,
             "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
           }
         }
@@ -270,8 +273,8 @@
           "properties": {
             "publisher": "Microsoft.Compute",
             "type": "CustomScriptExtension",
-            "typeHandlerVersion": "1.8",
-            "autoUpgradeMinorVersion": true,
+            "typeHandlerVersion": "1.7",
+            "autoUpgradeMinorVersion": false,
             "settings": {
               "fileUris": [
                 "[concat(variables('scriptsUri'), variables('scriptFileName'))]"
