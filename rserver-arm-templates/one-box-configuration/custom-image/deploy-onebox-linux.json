@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the Virtual Machine."
+      }
+    }
+  },
+  "variables": {
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
+    "scriptFileName": "Configure-Onebox.sh"    
+  },
+  "resources": [
+    {
+      "type": "extensions",
+      "name": "CustomScriptExtension",
+      "apiVersion": "[providers('Microsoft.Compute','virtualMachines/extensions').apiVersions[0]]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.4",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[concat(variables('scriptsUri'), variables('scriptFileName'))]"
+          ]             
+        },
+        "protectedSettings": {
+           "commandToExecute": "[concat('bash ', variables('scriptFileName'), ' \"', parameters('adminPassword'), '\"')]"
+        }
+      }
+    }
+  ]
+}
