@@ -91,8 +91,7 @@
     "virtualNetworkName": "[concat(parameters('dnsLabelPrefix'), 'VNET')]",
     "networkSecurityGroupName": "[concat(parameters('dnsLabelPrefix'), 'NSG')]",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
-    "scriptParameters": "[concat(' -password \"', parameters('adminPassword'), '\"')]"
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
   },
   "resources": [
     {
@@ -280,6 +279,9 @@
         "parameters": {
           "adminPassword": {
             "value": "[parameters('adminPassword')]"
+          },
+          "vmName": {
+            "value": "[variables('vmName')]"
           }
         }
       }

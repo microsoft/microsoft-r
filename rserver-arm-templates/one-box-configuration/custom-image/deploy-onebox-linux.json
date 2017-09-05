@@ -7,6 +7,9 @@
       "metadata": {
         "description": "Password for the Virtual Machine."
       }
+    },
+    "vmName": {
+      "type": "string"      
     }
   },
   "variables": {
@@ -15,8 +18,8 @@
   },
   "resources": [
     {
-      "type": "extensions",
-      "name": "CustomScriptExtension",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('vmName'),'/CustomScriptExtension')]",
       "apiVersion": "[providers('Microsoft.Compute','virtualMachines/extensions').apiVersions[0]]",
       "location": "[resourceGroup().location]",
       "properties": {
