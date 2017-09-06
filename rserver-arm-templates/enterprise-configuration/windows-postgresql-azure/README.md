@@ -22,7 +22,7 @@
 
 
 ## Architecture
-![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/enterprise-configuration/windows-sql-azure/windows-postgresql-azure-architecture.png)
+![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/enterprise-configuration/windows-postgresql-azure/windows-postgresql-azure-architecture.png)
 
 ## Setup HTTPS
 It is highly recommended to use encrypt traffic to your Microsoft R Server cluster, especially if you use it in a production environment.
