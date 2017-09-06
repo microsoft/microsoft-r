@@ -44,6 +44,7 @@ Go to rules, change 'rule1' to use the Listener 'HTTPS' instead of 'HTTP'
 
 Once you have deployed the cluster in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
+**NOTE : adminPassword must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s).**
 
 ```R
 remoteLogin("https://<yourdomain>",
