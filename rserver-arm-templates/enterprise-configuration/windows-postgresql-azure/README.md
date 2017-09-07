@@ -1,9 +1,16 @@
 # Configuring R Server to operationalize analytics (Enterprise Configuration) (Windows)
 
+<<<<<<< HEAD
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Frserver-arm-templates%2Fenterprise-configuration%2Fwindows-sql-azure%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png" />
 </a>
 <a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Frserver-arm-templates%2Fenterprise-configuration%2Fwindows-sql-azure%2Fazuredeploy.json" target="_blank">
+=======
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Frserver-arm-templates%2Fenterprise-configuration%2Fwindows-postgresql-azure%2Fazuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png" />
+</a>
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Frserver-arm-templates%2Fenterprise-configuration%2Fwindows-postgresql-azure%2Fazuredeploy.json" target="_blank">
+>>>>>>> origin/master
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
@@ -22,7 +29,11 @@
 
 
 ## Architecture
+<<<<<<< HEAD
 ![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/enterprise-configuration/windows-sql-azure/windows-postgresql-azure-architecture.png)
+=======
+![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/rserver-arm-templates/enterprise-configuration/windows-postgresql-azure/windows-postgresql-azure-architecture.png)
+>>>>>>> origin/master
 
 ## Setup HTTPS
 It is highly recommended to use encrypt traffic to your Microsoft R Server cluster, especially if you use it in a production environment.
@@ -107,4 +118,8 @@ For example:
 
 ```R
 mstsc /v:<dnsLabelPrefix>.<region>.cloudapp.azure.com:50000
+<<<<<<< HEAD
 ```
+=======
+```
+>>>>>>> origin/master
