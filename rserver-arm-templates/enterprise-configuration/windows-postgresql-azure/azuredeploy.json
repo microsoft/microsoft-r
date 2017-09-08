@@ -221,14 +221,29 @@
       },
       "kind": "",
       "name": "[variables('postgresqlName')]",
-      "apiVersion": "2017-04-30-preview",
+      "apiVersion": "2016-02-01-privatepreview",
       "location": "[resourceGroup().location]",
       "properties": {
           "version": "9.6",
           "administratorLogin": "[parameters('adminUsername')]",
           "administratorLoginPassword": "[parameters('adminPassword')]",
           "storageMB": 51200
-      }
+      },
+      "resources":[
+        {
+          "type":"firewallrules",
+          "apiVersion":"2016-02-01-privatepreview",
+          "dependsOn":[
+            "[concat('Microsoft.DBforPostgreSQL/servers/', variables('postgresqlName'))]"
+          ],
+          "location":"[resourceGroup().location]",
+          "name":"AllowAll",
+          "properties":{
+            "startIpAddress":"0.0.0.0",
+            "endIpAddress":"255.255.255.255"
+          }
+        }
+      ]
   },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
@@ -323,7 +338,7 @@
                   "typeHandlerVersion": "1.8",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -postgresqlConnectionString \"', concat('User ID=', parameters('adminUsername'), '@', variables('databaseName'), ';Password=', parameters('adminPassword'),';Host=', variables('postgresqlName'), '.postgres.database.azure.com;Port=5432;Database=', variables('databaseName'), ';Pooling=true;', '\"'))]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -postgresqlConnectionString \"', concat('User ID=', parameters('adminUsername'), '@', variables('postgresqlName'), ';Password=', parameters('adminPassword'),';Server=', variables('postgresqlName'), '.postgres.database.azure.com;Port=5432;Database=', variables('databaseName'), ';Pooling=true;MinPoolSize=0;MaxPoolSize=250;SSL Mode=Prefer; Trust Server Certificate=true', '\"'))]"
                   },
                   "type": "CustomScriptExtension"
                 }
