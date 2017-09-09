@@ -9,6 +9,14 @@
       },
       "maxLength": 61
     },
+    "windowsServerVersion": {
+      "type": "string",
+      "defaultValue": "2016",
+      "allowedValues": [ "2012R2", "2016" ],
+      "metadata": {
+        "description": "The Windows Server version for the VM"
+      }
+    },  
     "webNodeVMSku": {
       "type": "string",
       "defaultValue": "Standard_D2_v2",
@@ -164,7 +172,7 @@
       "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '4')))]"
     ],
     "saCount": "[length(variables('uniqueStringArray'))]",
-    "sqlserverName": "[concat('mrsdb', uniqueString(resourceGroup().id))]",
+    "postgresqlName": "[concat('mrsdb', uniqueString(resourceGroup().id))]",
     "databaseName": "mrsdb",
     "vnetName": "vnet",
     "feSubnetName": "WebNodeSubnet",
@@ -186,10 +194,7 @@
     "appGwSubnetID": "[concat(variables('vnetID'),'/subnets/', variables('appGwSubnetName'))]",
     "appGwBackendPort": 80,
     "appGwBePoolName": "AppGatewayBePool",
-    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
-    "imagePublisher": "microsoft-ads",
-    "imageOffer": "windows-data-science-vm",
-    "sku": "windows2016"
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
   },
   "resources": [
     {
@@ -206,52 +211,40 @@
       }
     },
     {
-      "name": "[variables('sqlserverName')]",
-      "type": "Microsoft.Sql/servers",
+      "type": "Microsoft.DBforPostgreSQL/servers",
+      "sku": {
+          "name": "PGSQLB100",
+          "tier": "Basic",
+          "capacity": 100,
+          "size": 51200,
+          "family": "SkuFamily"
+      },
+      "kind": "",
+      "name": "[variables('postgresqlName')]",
+      "apiVersion": "2016-02-01-privatepreview",
       "location": "[resourceGroup().location]",
-      "tags": {
-        "displayName": "SqlServer"
-      },
-      "apiVersion": "2014-04-01",
       "properties": {
-        "administratorLogin": "[parameters('adminUsername')]",
-        "administratorLoginPassword": "[parameters('adminPassword')]",
-        "version": "12.0"
+          "version": "9.6",
+          "administratorLogin": "[parameters('adminUsername')]",
+          "administratorLoginPassword": "[parameters('adminPassword')]",
+          "storageMB": 51200
       },
-      "resources": [
+      "resources":[
         {
-          "name": "[variables('databaseName')]",
-          "type": "databases",
-          "location": "[resourceGroup().location]",
-          "tags": {
-            "displayName": "Database"
-          },
-          "apiVersion": "2015-01-01",
-          "dependsOn": [
-            "[variables('sqlserverName')]"
+          "type":"firewallrules",
+          "apiVersion":"2016-02-01-privatepreview",
+          "dependsOn":[
+            "[concat('Microsoft.DBforPostgreSQL/servers/', variables('postgresqlName'))]"
           ],
-          "properties": {
-            "edition": "Basic",
-            "collation": "SQL_Latin1_General_CP1_CI_AS",
-            "maxSizeBytes": "1073741824",
-            "requestedServiceObjectiveName": "Basic"
-          }
-        },
-        {
-          "type": "firewallrules",
-          "apiVersion": "2014-04-01",
-          "dependsOn": [
-            "[variables('sqlserverName')]"
-          ],
-          "location": "[resourceGroup().location]",
-          "name": "AllowAllWindowsAzureIps",
-          "properties": {
-            "endIpAddress": "0.0.0.0",
-            "startIpAddress": "0.0.0.0"
+          "location":"[resourceGroup().location]",
+          "name":"AllowAll",
+          "properties":{
+            "startIpAddress":"0.0.0.0",
+            "endIpAddress":"255.255.255.255"
           }
         }
       ]
-    },
+  },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "name": "WebNodes",
@@ -266,13 +259,8 @@
         "name": "[parameters('webNodeVMSku')]",
         "capacity": "[parameters('webNodeInstanceCount')]"
       },
-      "plan": {
-        "name": "[variables('sku')]",
-        "publisher": "[variables('imagePublisher')]",
-        "product": "[variables('imageOffer')]"
-      },
       "properties": {
-        "overprovision": false,
+        "overprovision": "false",
         "upgradePolicy": {
           "mode": "Manual"
         },
@@ -290,11 +278,11 @@
               "createOption": "FromImage"
             },
             "imageReference": {
-              "publisher": "[variables('imagePublisher')]",
-              "offer": "[variables('imageOffer')]",
-              "sku": "[variables('sku')]",
+              "publisher": "MicrosoftRServer",
+              "offer": "[concat('RServer-WS', parameters('windowsServerVersion'))]",
+              "sku": "Enterprise",
               "version": "latest"
-            }            
+            }
           },
           "osProfile": {
             "computerNamePrefix": "WebNode",
@@ -347,10 +335,10 @@
                       "[concat(variables('scriptsUri'), 'Configure-WebNode.ps1')]"                      
                     ]
                   },
-                  "typeHandlerVersion": "1.7",
-                  "autoUpgradeMinorVersion": false,
+                  "typeHandlerVersion": "1.8",
+                  "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -sqlServerConnectionString \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=''', parameters('adminPassword'), ''';'), '\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -postgresqlConnectionString \"', concat('User ID=', parameters('adminUsername'), '@', variables('postgresqlName'), ';Password=', parameters('adminPassword'),';Server=', variables('postgresqlName'), '.postgres.database.azure.com;Port=5432;Database=', variables('databaseName'), ';Pooling=true;MinPoolSize=0;MaxPoolSize=250;SSL Mode=Prefer; Trust Server Certificate=true', '\"'))]"
                   },
                   "type": "CustomScriptExtension"
                 }
@@ -438,13 +426,8 @@
         "name": "[parameters('computeNodeVMSku')]",
         "capacity": "[parameters('computeNodeInstanceCount')]"
       },
-      "plan": {
-        "name": "[variables('sku')]",
-        "publisher": "[variables('imagePublisher')]",
-        "product": "[variables('imageOffer')]"
-      },
       "properties": {
-        "overprovision": false,
+        "overprovision": "false",
         "upgradePolicy": {
           "mode": "Manual"
         },
@@ -462,9 +445,9 @@
               "createOption": "FromImage"
             },
             "imageReference": {
-              "publisher": "[variables('imagePublisher')]",
-              "offer": "[variables('imageOffer')]",
-              "sku": "[variables('sku')]",
+              "publisher": "MicrosoftRServer",
+              "offer": "[concat('RServer-WS', parameters('windowsServerVersion'))]",
+              "sku": "Enterprise",
               "version": "latest"
             }
           },
@@ -504,8 +487,8 @@
                       "[concat(variables('scriptsUri'), 'Configure-ComputeNode.ps1')]"                      
                     ]
                   },
-                  "typeHandlerVersion": "1.7",
-                  "autoUpgradeMinorVersion": false,
+                  "typeHandlerVersion": "1.8",
+                  "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
                     "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-ComputeNode.ps1 -poolInitialSize \"', parameters('poolInitialSize'), '\" -poolMaxSize \"', parameters('poolMaxSize'), '\"')]"
                   },

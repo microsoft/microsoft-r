@@ -44,37 +44,43 @@ Go to rules, change 'rule1' to use the Listener 'HTTPS' instead of 'HTTP'
 
 Once you have deployed the cluster in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
+**NOTE : adminPassword must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s).**
+
+If you setup HTTPS:
+
+Go to your Azure portal, from the list of resources that you just deployed, click "AppGateway", note down the 'Frontend Public IP Address'
 
 ```R
-remoteLogin("https://<yourdomain>",
-             username = "<username>",
-             password = "<password>")
+remoteLogin("https://<AppGatewayFrontendPublicIPaddress>",
+             username = "<adminUsername>",
+             password = "<adminPassword>")
 ```
 
 Or, if you didn't setup HTTPS:
 
 ```R
 remoteLogin("http://<dnsLabelPrefix>.<region>.cloudapp.azure.com",
-             username = "<username>",
-             password = "<password>")
+             username = "<adminUsername>",
+             password = "<adminPassword>")
 ```
-
 
 
 For Example : 
 
+If you setup HTTPS:
+
 ```R
-remoteLogin("https://ml.contoso.com",
-             username = "myuser",
-             password = "myPa$$w0rd")
+remoteLogin("https://52.175.244.167",
+             username = "azureuser",
+             password = "Pa$$w0rd")
 ```
 
 Or, if you didn't setup HTTPS:
 
 ```R
-remoteLogin("http://mlcontoso.eastus.cloudapp.azure.com",
-             username = "myuser",
-             password = "myPa$$w0rd")
+remoteLogin("http://o16ntest.eastus.cloudapp.azure.com",
+             username = "azureuser",
+             password = "Pa$$w0rd")
 ```
 
 
