@@ -101,7 +101,9 @@
     "typeHandlerVersionWindows": "1.8",
     "typeHandlerVersionLinux": "1.4",
     "commandToExecuteWindows": "[concat('powershell -ExecutionPolicy Unrestricted -File ', './', variables('scriptFileNameWindows'), ' -password \"', parameters('adminPassword'), '\"')]",
-    "commandToExecuteLinux": "[concat('bash ', variables('scriptFileNameLinux'), ' \"', parameters('adminPassword'), '\"')]"
+    "commandToExecuteLinux": "[concat('bash ', variables('scriptFileNameLinux'), ' \"', parameters('adminPassword'), '\"')]",
+    "sshPortWindows" : "3389",
+    "sshPortLinux" : "22"
   },
   "resources": [
     {
@@ -157,7 +159,7 @@
               "description": "Allows Remote Desktop",
               "protocol": "Tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "3389",
+              "destinationPortRange": "[variables(concat('sshPort', parameters('osType')))]",
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",
