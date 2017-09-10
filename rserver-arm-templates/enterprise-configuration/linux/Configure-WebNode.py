@@ -18,7 +18,7 @@ if platform.linux_distribution()[0] == "Ubuntu":
     os.system("sed -i 's%# pass the PHP scripts%location /ping { return 200 \"hello\"; }#%g' /etc/nginx/sites-enabled/default")
     os.system("service nginx start")
     os.system("update-rc.d nginx defaults")
-elif platform.linux_distribution()[0] == "RedHat":
+elif platform.linux_distribution()[0] == "Red Hat Enterprise Linux Server":
     os.system("yum clean all")    
     os.system("yum makecache fast")    
     os.system("yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm")    
