@@ -295,7 +295,8 @@
       "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
-        "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
+        "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]",
+        "[resourceId('Microsoft.Compute/images/',variables('imageName'))]"
       ],
       "sku": {
         "name": "[parameters('webNodeVMSku')]",
@@ -445,7 +446,8 @@
       "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
-        "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
+        "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]",
+        "[resourceId('Microsoft.Compute/images/',variables('imageName'))]"
       ],
       "sku": {
         "name": "[parameters('computeNodeVMSku')]",
