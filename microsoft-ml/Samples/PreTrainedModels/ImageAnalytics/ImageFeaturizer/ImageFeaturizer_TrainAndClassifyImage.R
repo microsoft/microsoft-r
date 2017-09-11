@@ -31,11 +31,11 @@ images <- c(file.path(imageLocation, "Fish/Fish1.jpg"),
             file.path(imageLocation, "Helicopter/Helicopter3.jpg"),
             file.path(imageLocation, "Helicopter/Helicopter4.jpg"),
             file.path(imageLocation, "Helicopter/Helicopter5.jpg"),
-            file.path(imageLocation, "Jet/FighterJet1.jpg"),
-            file.path(imageLocation, "Jet/FighterJet2.jpg"),
-            file.path(imageLocation, "Jet/FighterJet3.jpg"),
-            file.path(imageLocation, "Jet/FighterJet4.jpg"),
-            file.path(imageLocation, "Jet/FighterJet5.jpg")
+            file.path(imageLocation, "FighterJet/FighterJet1.jpg"),
+            file.path(imageLocation, "FighterJet/FighterJet2.jpg"),
+            file.path(imageLocation, "FIghterJet/FighterJet3.jpg"),
+            file.path(imageLocation, "FighterJet/FighterJet4.jpg"),
+            file.path(imageLocation, "FighterJet/FighterJet5.jpg")
             )
 
 # Setup a dataframe with the path to the images 
