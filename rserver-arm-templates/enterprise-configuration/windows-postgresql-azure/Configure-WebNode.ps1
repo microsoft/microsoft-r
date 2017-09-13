@@ -49,6 +49,10 @@ $appSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Pr
 Start-Process "C:\Program Files\dotnet\dotnet.exe" -Wait -ArgumentList """C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.Utils.AdminUtil\Microsoft.RServer.Utils.AdminUtil.dll"" -silentWebNodeInstall ""$password""" -WorkingDirectory "C:\Program Files\Microsoft\R Server\R_SERVER\o16n" -RedirectStandardOutput out.txt -RedirectStandardError err.txt
 
 taskkill /f /im dotnet.exe
+Start-Sleep 120
+Start-ScheduledTask -TaskName "autostartwebnode"
+
+taskkill /f /im dotnet.exe
 Disable-ScheduledTask -TaskName "autostartwebnode"
 
 mkdir c:\ping
