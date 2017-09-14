@@ -134,9 +134,11 @@
           "name": "[parameters('diagnosticsStorageAccountName')]",
           "apiVersion": "[providers('Microsoft.Storage','storageAccounts').apiVersions[0]]",
           "location": "[parameters('location')]",
-          "properties": {
-              "accountType": "[parameters('diagnosticsStorageAccountType')]"
-          }
+          "sku": {
+            "name": "[parameters('diagnosticsStorageAccountType')]"
+          },
+          "kind": "Storage",
+          "properties": {}
       },
       {
           "type": "Microsoft.Network/virtualNetworks",

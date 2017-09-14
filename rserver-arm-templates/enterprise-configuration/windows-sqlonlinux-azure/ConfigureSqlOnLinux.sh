@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Source : https://docs.microsoft.com/en-us/sql/linux/sample-unattended-install-redhat
+# Script Source : https://docs.microsoft.com/en-us/sql/linux/sample-unattended-install-redhat
 
 password=$1
 

@@ -233,7 +233,7 @@
               "value": "[parameters('adminPassword')]"
           },
           "diagnosticsStorageAccountName": {
-              "value": "[concat(variables('sqlOnLinuxName'), '-diag')]"
+              "value": "[concat(variables('sqlOnLinuxName'), 'diag')]"
           },
           "diagnosticsStorageAccountType": {
               "value": "Standard_LRS"
