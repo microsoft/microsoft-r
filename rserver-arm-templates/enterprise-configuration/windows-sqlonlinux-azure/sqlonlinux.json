@@ -1,0 +1,242 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "location": {
+          "type": "string"
+      },
+      "virtualMachineName": {
+          "type": "string"
+      },
+      "virtualMachineSize": {
+          "type": "string"
+      },
+      "adminUsername": {
+          "type": "string"
+      },
+      "virtualNetworkName": {
+          "type": "string"
+      },
+      "networkInterfaceName": {
+          "type": "string"
+      },
+      "networkSecurityGroupName": {
+          "type": "string"
+      },
+      "adminPassword": {
+          "type": "securestring"
+      },
+      "diagnosticsStorageAccountName": {
+          "type": "string"
+      },
+      "diagnosticsStorageAccountType": {
+          "type": "string"
+      },
+      "addressPrefix": {
+          "type": "string"
+      },
+      "subnetName": {
+          "type": "string"
+      },
+      "subnetPrefix": {
+          "type": "string"
+      },
+      "publicIpAddressName": {
+          "type": "string"
+      },
+      "publicIpAddressType": {
+          "type": "string"
+      },
+      "scriptsUri" :{
+        "type": "string"
+      }
+  },
+  "variables": {
+      "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+      "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
+  },
+  "resources": [
+      {
+          "type": "Microsoft.Compute/virtualMachines",
+          "name": "[parameters('virtualMachineName')]",
+          "apiVersion": "[providers('Microsoft.Compute','virtualMachines').apiVersions[0]]",
+          "location": "[parameters('location')]",
+          "properties": {
+              "osProfile": {
+                  "computerName": "[parameters('virtualMachineName')]",
+                  "adminUsername": "[parameters('adminUsername')]",
+                  "adminPassword": "[parameters('adminPassword')]"
+              },
+              "hardwareProfile": {
+                  "vmSize": "[parameters('virtualMachineSize')]"
+              },
+              "storageProfile": {
+                  "imageReference": {
+                      "publisher": "MicrosoftSQLServer",
+                      "offer": "SQL2017-RHEL73",
+                      "sku": "Evaluation",
+                      "version": "latest"
+                  },
+                  "osDisk": {
+                      "createOption": "fromImage",
+                      "managedDisk": {
+                          "storageAccountType": "Premium_LRS"
+                      }
+                  },
+                  "dataDisks": []
+              },
+              "networkProfile": {
+                  "networkInterfaces": [
+                      {
+                          "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+                      }
+                  ]
+              },
+              "diagnosticsProfile": {
+                  "bootDiagnostics": {
+                      "enabled": true,
+                      "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('diagnosticsStorageAccountName')), '2015-06-15').primaryEndpoints['blob']]"
+                  }
+              }
+          },
+          "resources": [
+            {
+              "type": "extensions",
+              "name": "CustomScriptExtension",
+              "apiVersion": "[providers('Microsoft.Compute','virtualMachines/extensions').apiVersions[0]]",
+              "location": "[resourceGroup().location]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
+              ],
+              "properties": {
+                "publisher": "Microsoft.OSTCExtensions",
+                "type": "CustomScriptForLinux",
+                "typeHandlerVersion": "1.4",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "fileUris": [
+                    "[concat(parameters('scriptsUri'), 'ConfigureSqlOnLinux.sh')]"
+                  ]             
+                },
+                "protectedSettings": {
+                   "commandToExecute": "[concat('bash ConfigureSqlOnLinux.sh \"', parameters('adminPassword'), '\"')]"
+                }
+              }
+            }
+          ],
+          "dependsOn": [
+              "[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName'))]",
+              "[concat('Microsoft.Storage/storageAccounts/', parameters('diagnosticsStorageAccountName'))]"
+          ]
+      },
+      {
+          "type": "Microsoft.Storage/storageAccounts",
+          "name": "[parameters('diagnosticsStorageAccountName')]",
+          "apiVersion": "[providers('Microsoft.Storage','storageAccounts').apiVersions[0]]",
+          "location": "[parameters('location')]",
+          "properties": {
+              "accountType": "[parameters('diagnosticsStorageAccountType')]"
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks",
+          "name": "[parameters('virtualNetworkName')]",
+          "apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
+          "location": "[parameters('location')]",
+          "properties": {
+              "addressSpace": {
+                  "addressPrefixes": [
+                      "[parameters('addressPrefix')]"
+                  ]
+              },
+              "subnets": [
+                  {
+                      "name": "[parameters('subnetName')]",
+                      "properties": {
+                          "addressPrefix": "[parameters('subnetPrefix')]"
+                      }
+                  }
+              ]
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkInterfaces",
+          "name": "[parameters('networkInterfaceName')]",
+          "apiVersion": "[providers('Microsoft.Network','networkInterfaces').apiVersions[0]]",
+          "location": "[parameters('location')]",
+          "properties": {
+              "ipConfigurations": [
+                  {
+                      "name": "ipconfig1",
+                      "properties": {
+                          "subnet": {
+                              "id": "[variables('subnetRef')]"
+                          },
+                          "privateIPAllocationMethod": "Dynamic",
+                          "publicIpAddress": {
+                              "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
+                          }
+                      }
+                  }
+              ],
+              "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+              }
+          },
+          "dependsOn": [
+              "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
+              "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName'))]",
+              "[concat('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]"
+          ]
+      },
+      {
+          "type": "Microsoft.Network/publicIpAddresses",
+          "name": "[parameters('publicIpAddressName')]",
+          "apiVersion": "[providers('Microsoft.Network','publicIpAddresses').apiVersions[0]]",
+          "location": "[parameters('location')]",
+          "properties": {
+              "publicIpAllocationMethod": "[parameters('publicIpAddressType')]",
+              "idleTimeoutInMinutes": 30,
+              "dnsSettings": {
+                "domainNameLabel": "[parameters('virtualMachineName')]"
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[parameters('networkSecurityGroupName')]",
+          "apiVersion": "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]",
+          "location": "[parameters('location')]",
+          "properties": {
+              "securityRules": [
+                  {
+                      "name": "default-allow-ssh",
+                      "properties": {
+                          "priority": 1000,
+                          "protocol": "Tcp",
+                          "access": "Allow",
+                          "direction": "Inbound",
+                          "sourceAddressPrefix": "*",
+                          "sourcePortRange": "*",
+                          "destinationAddressPrefix": "*",
+                          "destinationPortRange": "22"
+                      }
+                  },
+                  {
+                    "name": "allow-remote-sql",
+                    "properties": {
+                        "priority": 1001,
+                        "protocol": "Tcp",
+                        "access": "Allow",
+                        "direction": "Inbound",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "1433"
+                    }
+                }
+              ]
+          }
+      }
+  ]
+}
