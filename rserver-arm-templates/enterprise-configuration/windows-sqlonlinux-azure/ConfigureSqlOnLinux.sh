@@ -4,15 +4,8 @@
 
 password=$1
 
-# Product ID of the version of SQL server you're installing
-# Must be evaluation, developer, express, web, standard, enterprise, or your 25 digit product key
-# Defaults to developer
-MSSQL_PID='evaluation'
-
 echo Running mssql-conf setup...
-sudo MSSQL_SA_PASSWORD=$password \
-     MSSQL_PID=$MSSQL_PID \
-     /opt/mssql/bin/mssql-conf -n setup accept-eula
+sudo MSSQL_SA_PASSWORD=$password /opt/mssql/bin/mssql-conf -n setup accept-eula
 
 echo Installing mssql-tools and unixODBC developer...
 sudo ACCEPT_EULA=Y yum install -y mssql-tools unixODBC-devel
@@ -41,7 +34,7 @@ do
   /opt/mssql-tools/bin/sqlcmd \
     -S localhost \
     -U SA \
-    -P $MSSQL_SA_PASSWORD \
+    -P $password \
     -Q "SELECT @@VERSION" 2>/dev/null
   errstatus=$?
   ((counter++))
