@@ -4,7 +4,7 @@
 
 password=$1
 
-sudo yum -y update
+sudo yum update -y mssql-server
 
 echo Running mssql-conf setup...
 sudo MSSQL_SA_PASSWORD=$password /opt/mssql/bin/mssql-conf -n setup accept-eula
