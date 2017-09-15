@@ -4,6 +4,8 @@
 
 password=$1
 
+sudo yum -y update
+
 echo Running mssql-conf setup...
 sudo MSSQL_SA_PASSWORD=$password /opt/mssql/bin/mssql-conf -n setup accept-eula
 
@@ -19,10 +21,6 @@ echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 echo Configuring firewall to allow traffic on port 1433...
 sudo firewall-cmd --zone=public --add-port=1433/tcp --permanent
 sudo firewall-cmd --reload
-
-# Restart SQL Server after making configuration changes:
-echo Restarting SQL Server...
-sudo systemctl restart mssql-server
 
 # Connect to server and get the version:
 counter=1
