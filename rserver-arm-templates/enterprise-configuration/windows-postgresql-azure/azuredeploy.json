@@ -688,8 +688,7 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2016-06-01",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
-        "idleTimeoutInMinutes": 30
+        "publicIPAllocationMethod": "Dynamic"
       }
     },
     {
