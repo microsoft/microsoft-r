@@ -197,6 +197,11 @@
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmName')]",
       "location": "[resourceGroup().location]",
+      "plan": {
+        "name": "linuxdsvm",
+        "publisher": "microsoft-ads",
+        "product": "linux-data-science-vm"
+      },
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
