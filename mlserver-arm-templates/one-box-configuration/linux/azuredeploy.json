@@ -65,7 +65,7 @@
     "linuxOS": {
       "type": "string",
       "defaultValue": "CentOS",
-      "allowedValues": [ "CentOS", "RedHat", "Ubuntu" ],
+      "allowedValues": [ "CentOS", "RHEL", "Ubuntu14", "Ubuntu16" ],
       "metadata": {
         "description": "The linux flavor for the VM"
       }
@@ -85,13 +85,16 @@
     "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
     "publisherCentOS": "OpenLogic",
     "offerCentOS": "CentOS",
-    "skuCentOS": "7.4",
-    "publisherRedHat": "RedHat",
-    "offerRedHat": "RHEL",
-    "skuRedHat": "7.3",
-    "publisherUbuntu": "Canonical",
-    "offerUbuntu": "UbuntuServer",
-    "skuUbuntu": "16.04-LTS"
+    "skuCentOS": "7.3",
+    "publisherRHEL": "RedHat",
+    "offerRHEL": "RHEL",
+    "skuRHEL": "7.3",
+    "publisherUbuntu14": "Canonical",
+    "offerUbuntu14": "UbuntuServer",
+    "skuUbuntu14": "14.04.5-LTS",
+    "publisherUbuntu16": "Canonical",
+    "offerUbuntu16": "UbuntuServer",
+    "skuUbuntu16": "16.04-LTS"
   },
   "resources": [
     {
