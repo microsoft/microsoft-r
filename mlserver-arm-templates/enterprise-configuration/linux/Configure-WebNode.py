@@ -30,10 +30,13 @@ else:
     os.system("iptables --flush")
 
 os.environ["HOME"] = "/root"
+dotnetruntime = "/opt/dotnet/9.2.1/dotnet/dotnet"
+if platform.linux_distribution()[0] == "Ubuntu":
+    dotnetruntime = "/usr/local/bin/dotnet"
 
-p = subprocess.Popen(["/usr/local/bin/dotnet", "restore"], cwd=".")
+p = subprocess.Popen([dotnetruntime, "restore"], cwd=".")
 p.wait()
-p = subprocess.Popen(["/usr/local/bin/dotnet", "run"], cwd=".")
+p = subprocess.Popen([dotnetruntime, "run"], cwd=".")
 p.wait()
 
 computeNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.ComputeNode/appsettings.json"
@@ -66,7 +69,7 @@ json.dump(data, f, indent=4, sort_keys=False)
 f.close()
 
 time.sleep(10)
-os.system("/usr/local/bin/dotnet /opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.Utils.AdminUtil/Microsoft.MLServer.Utils.AdminUtil.dll -silentwebnodeinstall \"" + password + "\"")
+os.system(dotnetruntime + " /opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.Utils.AdminUtil/Microsoft.MLServer.Utils.AdminUtil.dll -silentwebnodeinstall \"" + password + "\"")
 time.sleep(10)
 
 computeNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.ComputeNode/appsettings.json"

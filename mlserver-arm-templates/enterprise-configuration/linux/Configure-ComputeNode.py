@@ -36,5 +36,9 @@ data["Pool"]["MaxSize"] = int(poolMaxSize)
 f = open(appSettingsFilePath, "w")
 json.dump(data, f, indent=4, sort_keys=False)
 f.close()
-os.system("/usr/local/bin/dotnet /opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.Utils.AdminUtil/Microsoft.MLServer.Utils.AdminUtil.dll -silentcomputenodeinstall")
-os.system("iptables --flush")
+
+dotnetruntime = "/opt/dotnet/9.2.1/dotnet/dotnet"
+if platform.linux_distribution()[0] == "Ubuntu":
+    dotnetruntime = "/usr/local/bin/dotnet"
+
+os.system(dotnetruntime + " /opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.Utils.AdminUtil/Microsoft.MLServer.Utils.AdminUtil.dll -silentcomputenodeinstall")
