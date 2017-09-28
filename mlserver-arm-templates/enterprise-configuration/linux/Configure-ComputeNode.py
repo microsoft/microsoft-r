@@ -25,16 +25,16 @@ else:
     os.system("/opt/microsoft/mlserver/9.2.1/bin/R/activate.sh -l")
     os.system("iptables --flush")
 
-appSettingsFilePath = "/opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.ComputeNode/appsettings.json"
-f = open(appSettingsFilePath, "r")
+computeNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.ComputeNode/appsettings.json"
+f = open(computeNodeAppSettingsFilePath, "r")
 jsondata = f.read().decode("utf-8-sig").encode("utf-8").replace("\r\n","")
 data = json.loads(jsondata, object_pairs_hook=OrderedDict)
 
 data["Pool"]["InitialSize"] = int(poolInitialSize)
 data["Pool"]["MaxSize"] = int(poolMaxSize)
 
-f = open(appSettingsFilePath, "w")
-json.dump(data, f, indent=4, sort_keys=False)
+f = open(computeNodeAppSettingsFilePath, "w")
+json.dump(data, f, indent=2, sort_keys=False)
 f.close()
 
 os.system("/usr/local/bin/dotnet /opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.Utils.AdminUtil/Microsoft.MLServer.Utils.AdminUtil.dll -silentcomputenodeinstall")
