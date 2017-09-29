@@ -22,7 +22,7 @@
 
 
 ## Architecture
-![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/enterprise-configuration/windows-sql-azure/windows-sql-azure-architecture.png)
+![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/enterprise-configuration/windows/windows-sql-azure-architecture.png)
 
 ## Setup HTTPS
 It is highly recommended to use encrypt traffic to your Microsoft Machine Learning Server cluster, especially if you use it in a production environment.
