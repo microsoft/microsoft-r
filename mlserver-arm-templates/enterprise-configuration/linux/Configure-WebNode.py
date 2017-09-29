@@ -60,7 +60,10 @@ f = open(webNodeAppSettingsFilePath, "w")
 json.dump(data, f, indent=2, sort_keys=False)
 f.close()
 
-os.system("service webnode restart")
+if platform.linux_distribution()[0] == "Ubuntu" and platform.linux_distribution()[1] == "14.04":
+    os.system("service webnode restart")
+else:
+    os.system("systemctl restart webnode")
 
 data = json.loads(open(computeNodeAppSettingsFilePath, "r").read().decode("utf-8-sig").encode("utf-8").replace("\r\n",""), object_pairs_hook=OrderedDict)
 data.pop('configured', None)
