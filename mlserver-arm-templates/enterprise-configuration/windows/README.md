@@ -98,7 +98,7 @@ remoteLogin("http://o16ntest.eastus.cloudapp.azure.com",
 ```
 
 
-and start [Publishing Web Services]((https://docs.microsoft.com/en-us/machine-learning-server/operationalize/quickstart-publish-r-web-service#b-publish-model-as-a-web-service).
+and start [Publishing Web Services](https://docs.microsoft.com/en-us/machine-learning-server/operationalize/quickstart-publish-r-web-service#b-publish-model-as-a-web-service).
 
 **NOTE : if Azure Active Directory is not used in the template, username is 'admin'.**
 
