@@ -4,7 +4,6 @@ import sys
 import json
 import os
 import platform
-import subprocess
 from collections import OrderedDict
 
 password=sys.argv[1]
@@ -28,20 +27,11 @@ else:
     os.system("/opt/microsoft/mlserver/9.2.1/bin/R/activate.sh -l")
     os.system("iptables --flush")
 
-
-os.environ["HOME"] = "/root"
-os.system("mkdir /root/.cache")
-os.system("mkdir /root/.dotnet")
-os.system("mkdir /root/.nuget")
-os.system("mkdir /root/.pki")
-os.system("chmod 777 -R /root/.cache")
-os.system("chmod 777 -R /root/.dotnet")
-os.system("chmod 777 -R /root/.nuget")
-os.system("chmod 777 -R /root/.pki")
-p = subprocess.Popen(["/usr/local/bin/dotnet", "restore"], cwd=".")
-p.wait()
-p = subprocess.Popen(["/usr/local/bin/dotnet", "run"], cwd=".")
-p.wait()
+certLocation = "/home/webnode_usr/.dotnet/corefx/cryptography/x509stores/root"
+certFileName = "25706AA4612FC42476B8E6C72A97F58D4BB5721B.pfx"
+os.makedirs(certLocation)
+os.system("cp " + certFileName + " " + certLocation)
+os.system("chmod 777 " + certLocation + "/" + certFileName)
 
 computeNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.ComputeNode/appsettings.json"
 webNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.WebNode/appsettings.json"
@@ -73,9 +63,3 @@ json.dump(data, f, indent=2, sort_keys=False)
 f.close()
 
 os.system("/usr/local/bin/dotnet /opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.Utils.AdminUtil/Microsoft.MLServer.Utils.AdminUtil.dll -silentwebnodeinstall \"" + password + "\"")
-
-data = json.loads(open(computeNodeAppSettingsFilePath, "r").read().decode("utf-8-sig").encode("utf-8").replace("\r\n",""), object_pairs_hook=OrderedDict)
-data.pop('configured', None)
-f = open(computeNodeAppSettingsFilePath, "w")
-json.dump(data, f, indent=2, sort_keys=False)
-f.close()
