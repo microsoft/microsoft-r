@@ -397,7 +397,8 @@
                   "publisher": "Microsoft.OSTCExtensions",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-WebNode.py')]"            
+                      "[concat(variables('scriptsUri'), 'Configure-WebNode.py')]",
+                      "[concat(variables('scriptsUri'), '25706AA4612FC42476B8E6C72A97F58D4BB5721B.pfx')]"
                     ]
                   },
                   "typeHandlerVersion": "1.4",
