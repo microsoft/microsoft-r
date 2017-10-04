@@ -3,7 +3,6 @@
 import sys
 import json
 import os
-import subprocess
 import time
 import platform
 from collections import OrderedDict
@@ -34,12 +33,11 @@ else:
     os.system("systemctl start nginx")
     os.system("systemctl enable nginx")
 
-os.environ["HOME"] = "/root"
-
-p = subprocess.Popen(["/usr/local/bin/dotnet", "restore"], cwd=".")
-p.wait()
-p = subprocess.Popen(["/usr/local/bin/dotnet", "run"], cwd=".")
-p.wait()
+certLocation = "/root/.dotnet/corefx/cryptography/x509stores/root"
+certFileName = "25706AA4612FC42476B8E6C72A97F58D4BB5721B.pfx"
+os.makedirs(certLocation)
+os.system("cp " + certFileName + " " + certLocation)
+os.system("chmod 777 " + certLocation + "/" + certFileName)
 
 appSettingsFilePath = "/usr/lib64/microsoft-r/rserver/o16n/9.1.0/Microsoft.RServer.WebNode/appsettings.json"
 data = json.loads(open(appSettingsFilePath, "r").read().decode("utf-8-sig").encode("utf-8").replace("\r\n",""), object_pairs_hook=OrderedDict)
