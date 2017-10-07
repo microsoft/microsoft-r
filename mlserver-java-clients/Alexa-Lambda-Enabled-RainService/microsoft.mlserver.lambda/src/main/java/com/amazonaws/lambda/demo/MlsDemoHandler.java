@@ -12,7 +12,7 @@ public class MlsDemoHandler extends SpeechletRequestStreamHandler {
          * This Id can be found on https://developer.amazon.com/edw/home.html#/ "Edit" the relevant
          * Alexa Skill and put the relevant Application Ids in this Set.
          */
-        supportedApplicationIds.add("amzn1.ask.skill.8c6f6da1-6b74-4f77-9c31-a2411b71eb1b");
+        supportedApplicationIds.add("[your-application-id]");
     }
 
     public MlsDemoHandler() {
