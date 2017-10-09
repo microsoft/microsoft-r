@@ -1,0 +1,1187 @@
+{
+   "swagger": "2.0",
+   "info": {
+      "title": "MLServer",
+      "description": "Integration technology for deploying R and Python analytics inside web, desktop, mobile, and dashboard applications as well as backend systems. Turn your R or Python scripts into analytics web services, so code can be easily executed by applications running on a secure server.\n\nThe core APIs can be grouped into several categories, including: [Authentication](#authentication-apis), [Web Services](#services-management-apis), [Sessions](#session-apis), [Snapshots](#snapshot-apis), [Status](#status-apis), and [Centralized Configuration](#centralized-configuration-apis).\n",
+      "version": "9.2.1",
+      "termsOfService": "https://go.microsoft.com/fwlink/?linkid=836356",
+      "license": {
+         "name": "Copyright (C) Microsoft Corporation. All rights reserved.",
+         "url": "https://go.microsoft.com/fwlink/?linkid=836356"
+      }
+   },
+   "externalDocs": {
+      "description": "Complete documentation.",
+      "url": "https://go.microsoft.com/fwlink/?linkid=836356"
+   },
+   "tags": [
+      {
+         "name": "Authentication APIs",
+         "description": "The `authentication` APIs provide authentication related operations and access workflow features.\n\nAll API calls must be authenticated using the `POST /login` API or through Azure Active Directory.\n\nIf you use the `POST /login` API, ML Server will issue you a [bearer/access token](https://msdn.microsoft.com/en-us/microsoft-r/operationalize/security-access-tokens). This bearer token is a lightweight security token that grants the “bearer” access to a protected resource, in this case, the core APIs. Once a user has been authenticated, the application must validate the user’s bearer token to ensure that authentication was successful for the intended parties. If your organization uses Azure Active Directory, then AAD will issue the token.\n"
+      },
+      {
+         "name": "Session APIs",
+         "description": "The `sessions` APIs provide functionality for session management, which can be divided into the following groups:\n- `Session lifecycle APIs` help manage the session lifecycle.\n- `Session workspace APIs` help manage the objects in your workspace.\n- `Session working directory APIs` help manage the files in your workspace.\n- `Session snapshot APIs` help create and manage session snapshots. More snapshot APIs are covered in the next section.\n\nA session is an interactive stateful session that is run in an R or Python shell on the compute node. A session is managed by ML Server on behalf of the application.\n"
+      },
+      {
+         "name": "Snapshot APIs",
+         "description": "These APIs provide different operations to access and manage workspace snapshots. A snapshot is a prepared environment image of an R or Python session saved to Microsoft ML Server. A snapshot also includes the session's packages, objects and data files.\n\nFor optimal performance, consider the size of the snapshot carefully especially when publishing a service. Before creating a snapshot, ensure that you keep only those workspace objects you need and purge the rest. And, in the event that you only need a single object, consider passing that object alone itself instead of using a snapshot. \n\nA snapshot can be loaded into any subsequent remote session for the user who created it.  For example, suppose you want to execute a script that needs three R packages, a reference data file, and a model object.   Instead of loading these items each time you want to execute the script, create a snapshot of an session containing them. Then, you can save time later by loading this snapshot using its ID to get the session contents exactly as they were at the time the snapshot was created.\n"
+      }
+   ],
+   "schemes": [
+      "http",
+      "https"
+   ],
+   "produces": [
+      "application/json"
+   ],
+   "consumes": [
+      "application/json"
+   ],
+   "paths": {
+      "/login": {
+         "post": {
+            "summary": "Login User",
+            "description": "Logs the user in.",
+            "operationId": "login",
+            "tags": [
+               "Authentication APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "loginRequest",
+                  "in": "body",
+                  "description": "Login properties for athentication.",
+                  "required": true,
+                  "schema": {
+                     "$ref": "#/definitions/LoginRequest"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "$ref": "#/definitions/AccessTokenResponse"
+                  },
+                  "examples": {
+                     "application/json": {
+                        "token_type": "Bearer",
+                        "access_token": "eyJhbGciOiJSUzUxMiIsInR5cC",
+                        "expires_in": 3600,
+                        "expires_on": 1479664807,
+                        "refresh_token": "ScW2tnhl4Oi7ksHLj/TI"
+                     }
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized (invalid credentials)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/login/refreshToken": {
+         "post": {
+            "summary": "Refresh User Access Token",
+            "description": "The user renews access token and refresh token.",
+            "operationId": "renewToken",
+            "tags": [
+               "Authentication APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "renewTokenRequest",
+                  "in": "body",
+                  "description": "Renew access token properties for athentication.",
+                  "required": true,
+                  "schema": {
+                     "$ref": "#/definitions/RenewTokenRequest"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "$ref": "#/definitions/AccessTokenResponse"
+                  },
+                  "examples": {
+                     "application/json": {
+                        "token_type": "Bearer",
+                        "access_token": "eyJhbGciOiJSUzUxMiIsInR5cC",
+                        "expires_in": 3600,
+                        "expires_on": 1479664807,
+                        "refresh_token": "ScW2tnhl4Oi7ksHLj/TI"
+                     }
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized (invalid or expired refresh token)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         },
+         "delete": {
+            "summary": "Delete User Access Token",
+            "description": "The user revokes a refresh token.",
+            "operationId": "revokeRefreshToken",
+            "tags": [
+               "Authentication APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "refreshToken",
+                  "in": "query",
+                  "description": "The refresh token to be revoked.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "$ref": "#/definitions/AccessTokenResponse"
+                  },
+                  "examples": {
+                     "application/json": {
+                        "token_type": "Bearer",
+                        "access_token": "eyJhbGciOiJSUzUxMiIsInR5cC",
+                        "expires_in": 3600,
+                        "expires_on": 1479664807,
+                        "refresh_token": "ScW2tnhl4Oi7ksHLj/TI"
+                     }
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized (invalid or expired refresh token)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions": {
+         "post": {
+            "summary": "Create Session",
+            "description": "Create a new session.",
+            "operationId": "createSession",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "createSessionRequest",
+                  "in": "body",
+                  "description": "Properties of the new session.",
+                  "required": true,
+                  "schema": {
+                     "$ref": "#/definitions/CreateSessionRequest"
+                  }
+               }
+            ],
+            "responses": {
+               "201": {
+                  "description": "Created. Returns the id of the newly created session.",
+                  "schema": {
+                     "$ref": "#/definitions/CreateSessionResponse"
+                  },
+                  "examples": {
+                     "application/json": {
+                        "sessionId": "85b1ecd8-f5a5-42ce-87f3-5b7be97665ae"
+                     }
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         },
+         "get": {
+            "summary": "Get Sessions",
+            "description": "Lists all existing sessions for the current user.",
+            "operationId": "listSessions",
+            "tags": [
+               "Session APIs"
+            ],
+            "responses": {
+               "200": {
+                  "description": "The sessions for the current user.",
+                  "schema": {
+                     "type": "array",
+                     "items": {
+                        "$ref": "#/definitions/Session"
+                     }
+                  },
+                  "examples": {
+                     "application/json": [
+                        {
+                           "id": "e052a7f7-8fcd-40b9-b9b8-d351acd44444",
+                           "name": "mPheQrfoO0LmbLZ",
+                           "owner": "deployruser"
+                        },
+                        {
+                           "id": "l0dfsddf-4gjd-40b9-b9b8-sdf98yh99999",
+                           "name": "mPheQrfoO0LmbLZ",
+                           "owner": "sean"
+                        }
+                     ]
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/execute": {
+         "post": {
+            "summary": "Execute Code",
+            "description": "Executes code in the context of a specific session.",
+            "operationId": "executeCode",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "executeRequest",
+                  "in": "body",
+                  "description": "code that needs to be executed",
+                  "required": true,
+                  "schema": {
+                     "$ref": "#/definitions/ExecuteRequest"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "$ref": "#/definitions/ExecuteResponse"
+                  },
+                  "examples": {
+                     "application/json": {
+                        "success": true,
+                        "errorMessage": "",
+                        "outputParameters": [],
+                        "consoleOutput": "[1] 5\r\n",
+                        "changedFiles": []
+                     }
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/cancel": {
+         "post": {
+            "summary": "Cancel Session",
+            "description": "Cancel a session by aborting the current execution operation, afterwards the session will be alive and ready to accept any calls. Cancel session is **not** guaranteed to interrupt the execution",
+            "operationId": "cancelSession",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session to cancel.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}": {
+         "delete": {
+            "summary": "Delete Session",
+            "description": "Close a session and releases all it's associated resources.",
+            "operationId": "closeSession",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session to delete.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/force": {
+         "delete": {
+            "summary": "Delete Session by `force`",
+            "description": "Attempt to _kill_ a session and releases all it's associated resources.",
+            "operationId": "closeSessionByForce",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session to delete.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "string"
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/console-output": {
+         "get": {
+            "summary": "Get Console Output",
+            "description": "Returns the console output for the current or last execution.",
+            "operationId": "getSessionConsoleOutput",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "$ref": "#/definitions/ConsoleOutputResponse"
+                  },
+                  "examples": {
+                     "application/json": {
+                        "consoleOutput": "[1] 5\r\n"
+                     }
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/history": {
+         "get": {
+            "summary": "Get History",
+            "description": "Lists all history for a specific session.",
+            "operationId": "listSessionHistory",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "array",
+                     "items": {
+                        "type": "string"
+                     }
+                  },
+                  "examples": {
+                     "application/json": [
+                        "model <- glm(formula = am ~ hp + wt, data = mtcars, family = binomial)",
+                        "manualTransmission <- function(hp, wt) { \r\n newdata <- data.frame(hp = hp, wt = wt) \r\npredict(model, newdata, type = \"response\") \r\n}",
+                        "print(manualTransmission(120, 2.8))"
+                     ]
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/files": {
+         "post": {
+            "summary": "Load File",
+            "description": "Loads a file into the session working directory. The uploaded file name is extracted from the file and if another file with the same name already exists in the working directory, the file will be overwritten.",
+            "operationId": "uploadSessionFile",
+            "tags": [
+               "Session APIs"
+            ],
+            "produces": [
+               "text/plain"
+            ],
+            "consumes": [
+               "multipart/form-data"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "file",
+                  "in": "formData",
+                  "required": true,
+                  "type": "file",
+                  "description": "The file to be uploaded to the workspace."
+               }
+            ],
+            "responses": {
+               "201": {
+                  "description": "Created"
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         },
+         "get": {
+            "summary": "Get Files",
+            "description": "Lists all files of a specific session.",
+            "operationId": "listSessionFiles",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "array",
+                     "items": {
+                        "type": "string"
+                     }
+                  },
+                  "examples": {
+                     "application/json": [
+                        "statscore.csv",
+                        "hist.png",
+                        "notes.Rmd"
+                     ]
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/files/{fileName}": {
+         "get": {
+            "summary": "Get File",
+            "description": "Downloads a file from a session as a stream.",
+            "operationId": "getSessionFile",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "fileName",
+                  "in": "path",
+                  "description": "Name of the file.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "file"
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         },
+         "delete": {
+            "summary": "Delete File",
+            "description": "Delete a file from a session's working directory.",
+            "operationId": "deleteSessionFile",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "fileName",
+                  "in": "path",
+                  "description": "Name of the file.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "File is deleted"
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/workspace": {
+         "get": {
+            "summary": "Get Workspace Object Names",
+            "description": "Lists all object names of a specific session.",
+            "operationId": "listWorkspaceObjects",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "array",
+                     "items": {
+                        "type": "string"
+                     }
+                  },
+                  "examples": {
+                     "application/json": [
+                        "model",
+                        "manualTransmission",
+                        "am.glm",
+                        "newdata"
+                     ]
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)\n* `410` - Gone (once live session is now gone)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/workspace/{objectName}": {
+         "post": {
+            "summary": "Create Workspace Object",
+            "description": "Upload a serialized object into the session.",
+            "operationId": "setWorkspaceObject",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "objectName",
+                  "in": "path",
+                  "description": "Name of the object.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "serializedObject",
+                  "in": "body",
+                  "description": "The binary file that contains a serialized object to be uploaded. The binary file `Content-Type` should be `application/octet-stream`.",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "binary"
+                  }
+               }
+            ],
+            "consumes": [
+               "application/octet-stream"
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK"
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         },
+         "get": {
+            "summary": "Get Workspace Object",
+            "description": "Returns an object from a session. For the `R` runtime, the object is serialized as a `.RData` file stream. For the `Python` runtime, the object is serialized as a `.dill` file stream.\n\n**Important** Python objects are not guaranteed to be compatible with versions other than Python `3.5`.",
+            "operationId": "getWorkspaceObject",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "objectName",
+                  "in": "path",
+                  "description": "Name of the R or Python object.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "file",
+                     "description": "An `.RData` file representing the workspace for the `R` runtime or a `.dill` file representing the workspace for the `Python` runtime."
+                  },
+                  "examples": {
+                     "application/octet-stream": "[1] 5b 7b 22 63 72 65 61 74 69 6f 6e 54 69 6d 65 22 3a 22 32 30 31 36 2d 31 31 2d [27] 32 30 54 31 39 3a 35 30 3a 34 39 2e 37 35 32 37 36 37 36 22 2c 22 6e 61 6d 65"
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session or object not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         },
+         "delete": {
+            "summary": "Delete Workspace Object",
+            "description": "Delete an object from a session.",
+            "operationId": "deleteWorkspaceObject",
+            "tags": [
+               "Session APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "objectName",
+                  "in": "path",
+                  "description": "Name of the object.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK"
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session or object not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/snapshot": {
+         "post": {
+            "summary": "Create Snapshot",
+            "description": "Create a snapshot from session by saving the workspace and all files in the working directory into zip file, the return value will be the created snapshot Id.",
+            "operationId": "CreateSnapshot",
+            "tags": [
+               "Snapshot APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "createSnapshotRequest",
+                  "in": "body",
+                  "description": "Properties of the new snapshot.",
+                  "required": true,
+                  "schema": {
+                     "$ref": "#/definitions/CreateSnapshotRequest"
+                  }
+               }
+            ],
+            "responses": {
+               "201": {
+                  "description": "Created",
+                  "schema": {
+                     "$ref": "#/definitions/CreateSnapshotResponse"
+                  },
+                  "examples": {
+                     "application/json": {
+                        "snapshotId": "8fac71e8-92a9-4959-a679-4376e5aab20d"
+                     }
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/sessions/{id}/loadsnapshot/{snapshotId}": {
+         "post": {
+            "summary": "Load Snapshot",
+            "description": "Loads a snapshot into session by merging the workspace of the saved snapshot and target session. It will override the files in the working directory as well. \n\n**Note - ** You can only load R snapshots to R session and Python snapshots to a Python session.",
+            "operationId": "LoadSnapshot",
+            "tags": [
+               "Snapshot APIs"
+            ],
+            "parameters": [
+               {
+                  "name": "id",
+                  "in": "path",
+                  "description": "Id of the session.",
+                  "required": true,
+                  "type": "string"
+               },
+               {
+                  "name": "snapshotId",
+                  "in": "path",
+                  "description": "Id of the saved snapshot.",
+                  "required": true,
+                  "type": "string"
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK"
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized\n* `404` - Not Found (session or snapshot not found)",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+      "/snapshots": {
+         "get": {
+            "summary": "Get Snapshots",
+            "description": "List all the snapshots for the current user and display some info such as Id, display name, creation time, zip file size and owner for this snapshot.",
+            "operationId": "ListSnapshots",
+            "tags": [
+               "Snapshot APIs"
+            ],
+            "responses": {
+               "200": {
+                  "description": "OK",
+                  "schema": {
+                     "type": "array",
+                     "items": {
+                        "$ref": "#/definitions/Snapshot"
+                     }
+                  }
+               },
+               "default": {
+                  "description": "* `401` - Unauthorized",
+                  "schema": {
+                     "$ref": "#/definitions/Error"
+                  }
+               }
+            }
+         }
+      },
+   },
+   "definitions": {
+      "Session": {
+         "type": "object",
+         "properties": {
+            "id": {
+               "type": "string",
+               "description": "Unique identifier representing the session."
+            },
+            "name": {
+               "type": "string",
+               "description": "Name of the session."
+            },
+            "owner": {
+               "type": "string",
+               "description": "Owner of the session."
+            },
+            "runtimeType": {
+               "type": "string",
+               "enum": [
+                  "R",
+                  "Python"
+               ],
+               "description": "Type of the runtime.",
+               "x-ms-enum": {
+                  "name": "RuntimeType",
+                  "modelAsString": false
+               }
+            }
+         }
+      },
+      "CreateSessionRequest": {
+         "type": "object",
+         "properties": {
+            "name": {
+               "type": "string",
+               "description": "Name of the session. **Optional**"
+            },
+            "snapshotId": {
+               "type": "string",
+               "description": "Id of the snapshot to be loaded into the new created session. **Optional**"
+            },
+            "runtimeType": {
+               "type": "string",
+               "enum": [
+                  "R",
+                  "Python"
+               ],
+               "description": "Type of the runtime. **Optional [Default R]**",
+               "x-ms-enum": {
+                  "name": "RuntimeType",
+                  "modelAsString": false
+               }
+            }
+         }
+      },
+      "CreateSessionResponse": {
+         "type": "object",
+         "properties": {
+            "sessionId": {
+               "type": "string",
+               "description": "Id of the newly created session."
+            }
+         }
+      },
+      "Snapshot": {
+         "type": "object",
+         "properties": {
+            "id": {
+               "type": "string",
+               "description": "Unique identifier representing the snapshot."
+            },
+            "name": {
+               "type": "string",
+               "description": "Name of the snapshot."
+            },
+            "owner": {
+               "type": "string",
+               "description": "Owner of the snapshot."
+            },
+            "creationTime": {
+               "type": "string",
+               "format": "YYYY-mm-dd",
+               "description": "Creation time of the snapshot."
+            },
+            "contentSize": {
+               "type": "integer",
+               "description": "Size of the zip file of the snapshot."
+            }
+         }
+      },
+      "CreateSnapshotRequest": {
+         "type": "object",
+         "properties": {
+            "name": {
+               "type": "string",
+               "description": "Name of the snapshot. **Optional**"
+            }
+         }
+      },
+      "CreateSnapshotResponse": {
+         "type": "object",
+         "properties": {
+            "snapshotId": {
+               "type": "string",
+               "description": "Id of the created snapshot."
+            }
+         }
+      },
+      "ExecuteRequest": {
+         "type": "object",
+         "properties": {
+            "code": {
+               "type": "string",
+               "description": "code to execute. **<font color = 'red'>Required</font>**"
+            },
+            "inputParameters": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/definitions/WorkspaceObject"
+               },
+               "description": "Input parameters for the execution. **Optional**"
+            },
+            "outputParameters": {
+               "type": "array",
+               "items": {
+                  "type": "string"
+               },
+               "description": "Output parameters for the execution. **Optional**"
+            }
+         }
+      },
+      "ExecuteResponse": {
+         "type": "object",
+         "properties": {
+            "success": {
+               "type": "boolean",
+               "description": "The operation was successful."
+            },
+            "errorMessage": {
+               "type": "string",
+               "description": "Errors returned by the execution."
+            },
+            "outputParameters": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/definitions/WorkspaceObject"
+               },
+               "description": "Output parameters for the execution."
+            },
+            "consoleOutput": {
+               "type": "string",
+               "description": "The console output of the execution."
+            },
+            "changedFiles": {
+               "type": "array",
+               "items": {
+                  "type": "string",
+                  "description": "The filename of a modified file."
+               },
+               "description": "The filenames of the files modified during execution."
+            }
+         }
+      },
+      "WorkspaceObject": {
+         "type": "object",
+         "properties": {
+            "name": {
+               "type": "string",
+               "description": "The name of the workspace object."
+            },
+            "value": {
+               "type": "object",
+               "description": "Value of the object as JSON."
+            }
+         }
+      },
+      "ParameterDefinition": {
+         "type": "object",
+         "properties": {
+            "name": {
+               "type": "string",
+               "description": "The name of the parameter object."
+            },
+            "type": {
+               "type": "string",
+               "enum": [
+                  "logical",
+                  "numeric",
+                  "integer",
+                  "character",
+                  "vector",
+                  "matrix",
+                  "data.frame"
+               ],
+               "x-ms-enum": {
+                  "name": "type",
+                  "modelAsString": true
+               },
+               "description": "The type of the parameter object."
+            }
+         }
+      },
+      "LoginRequest": {
+         "type": "object",
+         "properties": {
+            "username": {
+               "type": "string",
+               "description": "The name of the user. **<font color = 'red'>Required</font>**"
+            },
+            "password": {
+               "type": "string",
+               "description": "The password of the user. **<font color = 'red'>Required</font>**"
+            }
+         }
+      },
+      "RenewTokenRequest": {
+         "type": "object",
+         "properties": {
+            "refreshToken": {
+               "type": "string",
+               "description": "A currently valid refresh token. **<font color='red'>Required</font>**"
+            }
+         }
+      },
+      "AccessTokenResponse": {
+         "type": "object",
+         "properties": {
+            "token_type": {
+               "type": "string"
+            },
+            "access_token": {
+               "type": "string"
+            },
+            "expires_on": {
+               "type": "string"
+            },
+            "refresh_token": {
+               "type": "string"
+            }
+         }
+      },
+      "Error": {
+         "type": "object",
+         "properties": {
+            "message": {
+               "type": "string"
+            },
+            "link": {
+               "type": "string"
+            },
+            "exceptionType": {
+               "type": "string"
+            }
+         }
+      },
+      "ConsoleOutputResponse": {
+         "type": "object",
+         "properties": {
+            "consoleOutput": {
+               "type": "string",
+               "description": "Console output of the current or last execution"
+            }
+         }
+      },
+   }
+}
