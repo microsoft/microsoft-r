@@ -24,6 +24,10 @@
 ## Architecture
 ![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/enterprise-configuration/windows/windows-sql-azure-architecture.png)
 
+
+This ARM template has a parameter mlserverbinary. You will need to download Machine Learning Server 9.2.1 Windows installation file ServerSetup.exe from [Visual Studio Dev Essentials](https://my.visualstudio.com/downloads?pid=2327). Upload the exe file to blob (using [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer) or any other method) and provide the blob download link as mlserverbinary. For example : https://test.blob.core.windows.net/ServerSetup.exe
+
+
 ## Setup HTTPS
 It is highly recommended to use encrypt traffic to your Microsoft Machine Learning Server cluster, especially if you use it in a production environment.
 
