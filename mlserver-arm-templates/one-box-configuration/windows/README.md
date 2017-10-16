@@ -23,6 +23,8 @@
 ## Architecture
 ![One-Box Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/one-box-configuration/windows/setup-onebox.png)
 
+This ARM template has a parameter mlserverbinary. You will need to download Machine Learning Server 9.2.1 Windows installation file ServerSetup.exe from [Visual Studio Dev Essentials](https://my.visualstudio.com/downloads?pid=2327). Upload the exe file to blob (using [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer) or any other method) and provide the blob download link as mlserverbinary. For example : https://test.blob.core.windows.net/ServerSetup.exe
+
 
 Once you have deployed the One-Box in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
