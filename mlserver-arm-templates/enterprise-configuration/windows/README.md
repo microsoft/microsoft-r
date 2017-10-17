@@ -113,3 +113,24 @@ For example:
 ```R
 mstsc /v:<dnsLabelPrefix>.<region>.cloudapp.azure.com:50000
 ```
+
+## Python
+
+To run the python installation, you will need to run mlserver’s python like this :
+
+```
+mlserver-python
+```
+
+And you can import the azureml-model-management-sdk, for instance:
+
+import azureml.deploy
+
+## Python Notebooks Sample
+
+https://docs.microsoft.com/en-us/machine-learning-server/operationalize/python/quickstart-deploy-python-web-service
+
+https://github.com/Microsoft/ML-Server-Python-Samples/blob/master/operationalize/Quickstart_Publish_Python_Web_Service.ipynb
+
+https://github.com/Microsoft/ML-Server-Python-Samples/blob/master/operationalize/Explore_Consume_Python_Web_Services.ipynb
+
