@@ -344,7 +344,7 @@
                   "typeHandlerVersion": "1.8",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -mlserverbinary \"', parameters('mlserverbinary'), '\" -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -sqlServerConnectionString \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=''', parameters('adminPassword'), ''';'), '\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -sqlServerConnectionString \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=''', parameters('adminPassword'), ''';'), '\"')]"
                   },
                   "type": "CustomScriptExtension"
                 }
