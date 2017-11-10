@@ -703,7 +703,7 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('appGwPublicIPAddressName')]",
       "location": "[resourceGroup().location]",
-      
+      "apiVersion": "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]",      
       "properties": {
         "publicIPAllocationMethod": "Dynamic"        
       }
