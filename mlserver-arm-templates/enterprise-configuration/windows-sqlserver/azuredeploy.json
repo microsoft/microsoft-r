@@ -198,9 +198,11 @@
         "name": "storageLoop",
         "count": "[variables('saCount')]"
       },
-      "properties": {
-        "accountType": "[variables('storageAccountType')]"
-      }
+      "sku": {
+        "name": "[variables('storageAccountType')]"
+      },
+      "kind": "Storage",
+      "properties": {}
     },
     {
       "name": "[variables('sqlserverName')]",
