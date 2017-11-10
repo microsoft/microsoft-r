@@ -3,7 +3,6 @@
 import sys
 import json
 import os
-import platform
 from collections import OrderedDict
 
 poolInitialSize = sys.argv[1]
