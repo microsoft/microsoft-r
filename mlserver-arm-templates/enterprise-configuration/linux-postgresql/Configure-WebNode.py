@@ -49,3 +49,4 @@ os.system("/usr/local/bin/dotnet /opt/microsoft/mlserver/9.2.1/o16n/Microsoft.ML
 os.system("service webnode stop")
 time.sleep(120)
 os.system("service webnode start")
+os.system("iptables --flush")
