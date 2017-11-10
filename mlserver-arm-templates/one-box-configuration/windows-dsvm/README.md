@@ -1,4 +1,4 @@
-# Configuring Microsoft Machine Learning Server to operationalize analytics (One-Box Configuration) (Windows)
+# Configuring Microsoft Machine Learning Server to operationalize analytics (One-Box Configuration) (Windows Data Science VM)
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fone-box-configuration%2Fwindows%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png" />
@@ -22,9 +22,6 @@
 
 ## Architecture
 ![One-Box Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/one-box-configuration/windows/setup-onebox.png)
-
-This ARM template has a parameter mlserverbinary. You will need to download Machine Learning Server 9.2.1 Windows installation file ServerSetup.exe from [Visual Studio Dev Essentials](https://my.visualstudio.com/downloads?pid=2327). Upload the exe file to blob (using [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer) or any other method) and provide the blob download link as mlserverbinary. For example : https://test.blob.core.windows.net/ServerSetup.exe
-
 
 Once you have deployed the One-Box in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
@@ -54,8 +51,6 @@ To connect to your Windows Server VM, you can remote desktop using its Public IP
 ```
 mstsc /v:<dnsLabelPrefix>.<region>.cloudapp.azure.com
 ```
-<<<<<<< Updated upstream
-=======
 
 ## Python
 
@@ -76,4 +71,3 @@ https://docs.microsoft.com/en-us/machine-learning-server/operationalize/python/q
 https://github.com/Microsoft/ML-Server-Python-Samples/blob/master/operationalize/Quickstart_Publish_Python_Web_Service.ipynb
 
 https://github.com/Microsoft/ML-Server-Python-Samples/blob/master/operationalize/Explore_Consume_Python_Web_Services.ipynb
->>>>>>> Stashed changes
