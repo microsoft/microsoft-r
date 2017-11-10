@@ -1,5 +1,5 @@
 param (
-    [string]$password,
+	[string]$password,
     [string]$sqlServerConnectionString,
     [string]$aadTenant,
     [string]$aadClientId
@@ -30,7 +30,11 @@ Pop-Location
 
 AllowRead-Certificate($cert)
 
-$appSettingsJson = Get-Content -Encoding UTF8 -Raw "C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.WebNode\appsettings.json" | ConvertFrom-Json
+$computeNodeAppSettingsJson = Get-Content -Encoding UTF8 -Raw "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.ComputeNode\appsettings.json" | ConvertFrom-Json
+$computeNodeAppSettingsJson | add-member -Name "configured" -value "configured" -MemberType NoteProperty
+$computeNodeAppSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.ComputeNode\appsettings.json"
+
+$appSettingsJson = Get-Content -Encoding UTF8 -Raw "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\appsettings.json" | ConvertFrom-Json
 $appSettingsJson.ConnectionStrings.sqlserver.Enabled = $True
 $appSettingsJson.ConnectionStrings.sqlserver.Connection = $sqlServerConnectionString
 $appSettingsJson.ConnectionStrings.defaultDb.Enabled = $False
@@ -44,18 +48,14 @@ if($aadTenant -ne "") {
     $appSettingsJson.Authentication.AzureActiveDirectory.Enabled = $True
 }
 
-$appSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.WebNode\appsettings.json"
+$appSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\appsettings.json"
 
-Start-Process "C:\Program Files\dotnet\dotnet.exe" -Wait -ArgumentList """C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.Utils.AdminUtil\Microsoft.RServer.Utils.AdminUtil.dll"" -silentWebNodeInstall ""$password""" -WorkingDirectory "C:\Program Files\Microsoft\R Server\R_SERVER\o16n" -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+Start-Process "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\dotnet\dotnet.exe" -Wait -ArgumentList """C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.Utils.AdminUtil\Microsoft.MLServer.Utils.AdminUtil.dll"" -silentWebNodeInstall ""$password""" -WorkingDirectory "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n" -RedirectStandardOutput out.txt -RedirectStandardError err.txt
 
 taskkill /f /im dotnet.exe
 Disable-ScheduledTask -TaskName "autostartwebnode"
 
-mkdir c:\ping
-echo "" >> c:\ping\index.htm
-echo "<configuration><system.webServer><handlers><remove name=""aspNetCore"" /></handlers></system.webServer></configuration>" > c:\ping\web.config
-
-echo "<configuration><system.webServer><handlers><add name=""aspNetCore"" path=""*"" verb=""*"" modules=""AspNetCoreModule"" resourceType=""Unspecified"" /></handlers><aspNetCore requestTimeout=""01:00:00"" processPath=""dotnet"" arguments=""./Microsoft.RServer.WebNode.dll"" stdoutLogEnabled=""true"" stdoutLogFile="".\logs\stdout"" forwardWindowsAuthToken=""false""><environmentVariables><environmentVariable name=""COMPlus_ReadyToRunExcludeList"" value=""System.Security.Cryptography.X509Certificates"" /></environmentVariables></aspNetCore></system.webServer></configuration>" > "C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.WebNode\web.config"
+echo "<configuration><system.webServer><handlers><add name=""aspNetCore"" path=""*"" verb=""*"" modules=""AspNetCoreModule"" resourceType=""Unspecified"" /></handlers><aspNetCore requestTimeout=""01:00:00"" processPath=""C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\dotnet\dotnet.exe"" arguments=""./Microsoft.MLServer.WebNode.dll"" stdoutLogEnabled=""true"" stdoutLogFile="".\logs\stdout"" forwardWindowsAuthToken=""false""><environmentVariables><environmentVariable name=""COMPlus_ReadyToRunExcludeList"" value=""System.Security.Cryptography.X509Certificates"" /></environmentVariables></aspNetCore></system.webServer></configuration>" > "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\web.config"
 
 $hostingBundleDownloadJob = Start-Job {Invoke-WebRequest "https://go.microsoft.com/fwlink/?linkid=844461" -OutFile "C:\WindowsAzure\HostingBundle.exe"}
 Install-WindowsFeature -name Web-Server -IncludeManagementTools
@@ -65,8 +65,8 @@ Start-Process "C:\WindowsAzure\HostingBundle.exe" "/quiet /install OPT_INSTALL_L
 Import-Module WebAdministration
 
 $iisAppPoolName = "netcore"
-$iisAppName = "MRS-WebNode"
-$directoryPath = "C:\Program Files\Microsoft\R Server\R_SERVER\o16n\Microsoft.RServer.WebNode"
+$iisAppName = "MLS-WebNode"
+$directoryPath = "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode"
 
 Push-Location IIS:\AppPools\
 $appPool = New-Item $iisAppPoolName
@@ -78,12 +78,6 @@ Push-Location IIS:\Sites\
 Get-ChildItem | Remove-Item -Recurse -Confirm:$false
 $iisApp = New-Item $iisAppName -bindings @{protocol="http";bindingInformation=":80:"} -physicalPath $directoryPath
 $iisApp | Set-ItemProperty -Name "applicationPool" -Value $iisAppPoolName
-
-$virtualDirectoryName = 'ping'
-$physicalPath = 'c:\ping'
-$virtualDirectoryPath = "IIS:\Sites\$iisAppName\$virtualDirectoryName"
-
-New-Item $virtualDirectoryPath -type VirtualDirectory -physicalPath $physicalPath
 
 Pop-Location
 iisreset

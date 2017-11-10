@@ -1,19 +1,9 @@
 param (
-	[string]$mlserverbinary,
 	[string]$password,
     [string]$sqlServerConnectionString,
     [string]$aadTenant,
     [string]$aadClientId
 )
-
-Invoke-WebRequest -UseBasicParsing -Uri "$mlserverbinary" -OutFile ServerSetup.exe
-
-$psi = New-Object System.Diagnostics.ProcessStartInfo;
-$psi.FileName = ".\ServerSetup.exe";
-$psi.Arguments = "/quiet /install /full /models";
-$psi.WorkingDirectory = (Get-Item -Path ".\" -Verbose).FullName;
-$p = [System.Diagnostics.Process]::Start($psi);
-$p.WaitForExit();
 
 function AllowRead-Certificate
 {

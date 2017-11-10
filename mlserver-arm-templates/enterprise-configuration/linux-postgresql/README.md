@@ -1,9 +1,9 @@
 # Configuring Microsoft Machine Learning Server to operationalize analytics (Enterprise Configuration) (Linux)
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fenterprise-configuration%2Flinux%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fenterprise-configuration%2Flinux-postgresql%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png" />
 </a>
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fenterprise-configuration%2Flinux%2Fazuredeploy.json" target="_blank">
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fenterprise-configuration%2Flinux-postgresql%2Fazuredeploy.json" target="_blank">
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
@@ -20,7 +20,7 @@
 [Supported Platforms](https://docs.microsoft.com/en-us/machine-learning-server/install/r-server-install-supported-platforms) 
 
 ## Architecture
-![Linux-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/enterprise-configuration/linux/linux-sql-azure-architecture.png)
+![Linux-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/enterprise-configuration/linux-postgresql/linux-postgresql-architecture.png)
 
 
 ## Connect to your cluster

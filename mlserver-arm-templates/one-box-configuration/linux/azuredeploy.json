@@ -65,7 +65,7 @@
     "linuxOS": {
       "type": "string",
       "defaultValue": "CentOS",
-      "allowedValues": [ "CentOS", "RHEL", "Ubuntu14", "Ubuntu16" ],
+      "allowedValues": [ "CentOS", "RedHat", "Ubuntu" ],
       "metadata": {
         "description": "The linux flavor for the VM"
       }
@@ -82,19 +82,7 @@
     "virtualNetworkName": "[concat(parameters('dnsLabelPrefix'), 'VNET')]",
     "networkSecurityGroupName": "[concat(parameters('dnsLabelPrefix'), 'NSG')]",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
-    "publisherCentOS": "OpenLogic",
-    "offerCentOS": "CentOS",
-    "skuCentOS": "7.3",
-    "publisherRHEL": "RedHat",
-    "offerRHEL": "RHEL",
-    "skuRHEL": "7.3",
-    "publisherUbuntu14": "Canonical",
-    "offerUbuntu14": "UbuntuServer",
-    "skuUbuntu14": "14.04.5-LTS",
-    "publisherUbuntu16": "Canonical",
-    "offerUbuntu16": "UbuntuServer",
-    "skuUbuntu16": "16.04-LTS"
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
   },
   "resources": [
     {
@@ -232,9 +220,9 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[variables(concat('publisher', parameters('linuxOS')))]",
-            "offer": "[variables(concat('offer', parameters('linuxOS')))]",
-            "sku": "[variables(concat('sku', parameters('linuxOS')))]",
+            "publisher": "MicrosoftRServer",
+            "offer": "[concat('MLServer-', parameters('linuxOS'))]",
+            "sku": "Enterprise",
             "version": "latest"
           },
           "osDisk": {

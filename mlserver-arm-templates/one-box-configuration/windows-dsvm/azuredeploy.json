@@ -79,7 +79,7 @@
     "scriptParameters": "[concat(' -password \"', parameters('adminPassword'), '\"')]",
     "imagePublisher": "microsoft-ads",
     "imageOffer": "windows-data-science-vm",
-    "sku": "windows2016"
+    "imageSku": "windows2016"
   },
   "resources": [
     {
@@ -207,7 +207,7 @@
         "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
       "plan": {
-        "name": "[variables('sku')]",
+        "name": "[variables('imageSku')]",
         "publisher": "[variables('imagePublisher')]",
         "product": "[variables('imageOffer')]"
       },
@@ -224,7 +224,7 @@
           "imageReference": {
             "publisher": "[variables('imagePublisher')]",
             "offer": "[variables('imageOffer')]",
-            "sku": "[variables('sku')]",
+            "sku": "[variables('imageSku')]",
             "version": "latest"
           },
           "osDisk": {
@@ -273,8 +273,8 @@
           "properties": {
             "publisher": "Microsoft.Compute",
             "type": "CustomScriptExtension",
-            "typeHandlerVersion": "1.7",
-            "autoUpgradeMinorVersion": false,
+            "typeHandlerVersion": "1.8",
+            "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
                 "[concat(variables('scriptsUri'), variables('scriptFileName'))]"

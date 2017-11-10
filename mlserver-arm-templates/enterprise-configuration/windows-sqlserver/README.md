@@ -1,9 +1,9 @@
 # Configuring Microsoft Machine Learning Server to operationalize analytics (Enterprise Configuration) (Windows)
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fenterprise-configuration%2Fwindows%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fenterprise-configuration%2Fwindows-sqlserver%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png" />
 </a>
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fenterprise-configuration%2Fwindows%2Fazuredeploy.json" target="_blank">
+<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoft%2Fmicrosoft-r%2Fmaster%2Fmlserver-arm-templates%2Fenterprise-configuration%2Fwindows-sqlserver%2Fazuredeploy.json" target="_blank">
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
@@ -22,10 +22,7 @@
 
 
 ## Architecture
-![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/enterprise-configuration/windows/windows-sql-azure-architecture.png)
-
-
-This ARM template has a parameter mlserverbinary. You will need to download Machine Learning Server 9.2.1 Windows installation file ServerSetup.exe from [Visual Studio Dev Essentials](https://my.visualstudio.com/downloads?pid=2327). Upload the exe file to blob (using [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer) or any other method) and provide the blob download link as mlserverbinary. For example : https://test.blob.core.windows.net/ServerSetup.exe
+![Windows-Sql-Azure Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/mlserver-arm-templates/enterprise-configuration/windows-sqlserver/windows-sqlserver-architecture.png)
 
 
 ## Setup HTTPS

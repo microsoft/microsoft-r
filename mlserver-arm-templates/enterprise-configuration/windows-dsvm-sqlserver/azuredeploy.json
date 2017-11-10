@@ -9,14 +9,6 @@
       },
       "maxLength": 61
     },
-    "linuxOS": {
-      "type": "string",
-      "defaultValue": "CentOS",
-      "allowedValues": [ "CentOS", "RHEL", "Ubuntu14", "Ubuntu16" ],
-      "metadata": {
-        "description": "The linux flavor for the VM"
-      }
-    },
     "webNodeVMSku": {
       "type": "string",
       "defaultValue": "Standard_D2_v2",
@@ -175,10 +167,9 @@
     "sqlserverName": "[concat('mrsdb', uniqueString(resourceGroup().id))]",
     "databaseName": "mrsdb",
     "vnetName": "vnet",
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
-    "networkSecurityGroupName": "[concat(parameters('dnsPrefix'), 'NSG')]",
     "feSubnetName": "WebNodeSubnet",
     "beSubnetName": "ComputeNodeSubnet",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
     "feSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('feSubnetName'))]",
     "beSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('beSubnetName'))]",
     "publicIPAddressName": "PublicIP",
@@ -186,19 +177,19 @@
     "webNodeLoadBalancerFrontEndName": "webNodeLoadBalancerFrontEnd",
     "webNodeLoadBalancerBackEndName": "webNodeLoadBalancerBackEnd",
     "webNodeLoadBalancerNatPoolName": "webNodeLoadBalancerNatPool",
+    "appGwPublicIPAddressName": "AppGatewayIP",
+    "appGwName": "AppGateway",
+    "appGwPublicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses', variables('appGwPublicIPAddressName'))]",
+    "appGwID": "[resourceId('Microsoft.Network/applicationGateways',variables('appGwName'))]",
+    "appGwSubnetName": "[concat(variables('namingInfix'),'appGwSubnet')]",
+    "appGwSubnetPrefix": "10.0.2.0/24",
+    "appGwSubnetID": "[concat(variables('vnetID'),'/subnets/', variables('appGwSubnetName'))]",
+    "appGwBackendPort": 80,
+    "appGwBePoolName": "AppGatewayBePool",
     "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
-    "publisherCentOS": "OpenLogic",
-    "offerCentOS": "CentOS",
-    "skuCentOS": "7.3",
-    "publisherRHEL": "RedHat",
-    "offerRHEL": "RHEL",
-    "skuRHEL": "7.3",
-    "publisherUbuntu14": "Canonical",
-    "offerUbuntu14": "UbuntuServer",
-    "skuUbuntu14": "14.04.5-LTS",
-    "publisherUbuntu16": "Canonical",
-    "offerUbuntu16": "UbuntuServer",
-    "skuUbuntu16": "16.04-LTS"
+    "imagePublisher": "microsoft-ads",
+    "imageOffer": "windows-data-science-vm",
+    "imageSku": "windows2016"
   },
   "resources": [
     {
@@ -210,62 +201,8 @@
         "name": "storageLoop",
         "count": "[variables('saCount')]"
       },
-      "sku": {
-        "name": "[variables('storageAccountType')]"
-      },
-      "kind": "Storage",
-      "properties": {}
-    },
-    {
-      "apiVersion": "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]",
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('networkSecurityGroupName')]",
-      "location": "[resourceGroup().location]",
       "properties": {
-        "securityRules": [
-          {
-            "name": "SSH",
-            "properties": {
-              "description": "Allows SSH traffic",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "22",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 100,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "WebNode",
-            "properties": {
-              "description": "Allows WebNode traffic",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "12800",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 101,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "ComputeNode",
-            "properties": {
-              "description": "Allows ComputeNode traffic",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "12805",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 102,
-              "direction": "Inbound"
-            }
-          }
-        ]
+        "accountType": "[variables('storageAccountType')]"
       }
     },
     {
@@ -275,7 +212,7 @@
       "tags": {
         "displayName": "SqlServer"
       },
-      "apiVersion": "[providers('Microsoft.Sql','servers').apiVersions[0]]",
+      "apiVersion": "2014-04-01",
       "properties": {
         "administratorLogin": "[parameters('adminUsername')]",
         "administratorLoginPassword": "[parameters('adminPassword')]",
@@ -301,7 +238,7 @@
           }
         },
         {
-          "type": "firewallrules",
+          "type": "firewallRules",
           "apiVersion": "2014-04-01",
           "dependsOn": [
             "[variables('sqlserverName')]"
@@ -329,8 +266,13 @@
         "name": "[parameters('webNodeVMSku')]",
         "capacity": "[parameters('webNodeInstanceCount')]"
       },
+      "plan": {
+        "name": "[variables('imageSku')]",
+        "publisher": "[variables('imagePublisher')]",
+        "product": "[variables('imageOffer')]"
+      },      
       "properties": {
-        "overprovision": "false",
+        "overprovision": false,
         "upgradePolicy": {
           "mode": "Manual"
         },
@@ -348,9 +290,9 @@
               "createOption": "FromImage"
             },
             "imageReference": {
-              "publisher": "[variables(concat('publisher', parameters('linuxOS')))]",
-              "offer": "[variables(concat('offer', parameters('linuxOS')))]",
-              "sku": "[variables(concat('sku', parameters('linuxOS')))]",
+              "publisher": "[variables('imagePublisher')]",
+              "offer": "[variables('imageOffer')]",
+              "sku": "[variables('imageSku')]",
               "version": "latest"
             }
           },
@@ -379,7 +321,12 @@
                         ],
                         "loadBalancerInboundNatPools": [
                           {
-                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('webNodeLoadBalancerName'), '/inboundNatPools/', variables('webNodeLoadBalancerNatPoolName'), 'SSH')]"
+                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('webNodeLoadBalancerName'), '/inboundNatPools/', variables('webNodeLoadBalancerNatPoolName'), 'RDP')]"
+                          }
+                        ],
+                        "ApplicationGatewayBackendAddressPools": [
+                          {
+                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/applicationGateways/', variables('appGwName'), '/backendAddressPools/', variables('appGwBePoolName'))]"
                           }
                         ]
                       }
@@ -394,19 +341,18 @@
               {
                 "name": "customScript",
                 "properties": {
-                  "publisher": "Microsoft.OSTCExtensions",
+                  "publisher": "Microsoft.Compute",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-WebNode.py')]",
-                      "[concat(variables('scriptsUri'), '25706AA4612FC42476B8E6C72A97F58D4BB5721B.pfx')]"
+                      "[concat(variables('scriptsUri'), 'Configure-WebNode.ps1')]"                      
                     ]
                   },
-                  "typeHandlerVersion": "1.4",
+                  "typeHandlerVersion": "1.8",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('python Configure-WebNode.py \"', parameters('adminPassword'), '\" \"', parameters('aadTenant'), '\" \"', parameters('aadClientId'), '\" \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=''', parameters('adminPassword'), ''';'), '\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -mlserverbinary \"', parameters('mlserverbinary'), '\" -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -sqlServerConnectionString \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=''', parameters('adminPassword'), ''';'), '\"')]"
                   },
-                  "type": "CustomScriptForLinux"
+                  "type": "CustomScriptExtension"
                 }
               }
             ]
@@ -431,7 +377,7 @@
             "name": "Profile1",
             "capacity": {
               "minimum": "[parameters('webNodeInstanceCount')]",
-              "maximum": 100,
+              "maximum": "100",
               "default": "[parameters('webNodeInstanceCount')]"
             },
             "rules": [
@@ -492,8 +438,13 @@
         "name": "[parameters('computeNodeVMSku')]",
         "capacity": "[parameters('computeNodeInstanceCount')]"
       },
+      "plan": {
+        "name": "[variables('imageSku')]",
+        "publisher": "[variables('imagePublisher')]",
+        "product": "[variables('imageOffer')]"
+      },      
       "properties": {
-        "overprovision": "false",
+        "overprovision": false,
         "upgradePolicy": {
           "mode": "Manual"
         },
@@ -511,9 +462,9 @@
               "createOption": "FromImage"
             },
             "imageReference": {
-              "publisher": "[variables(concat('publisher', parameters('linuxOS')))]",
-              "offer": "[variables(concat('offer', parameters('linuxOS')))]",
-              "sku": "[variables(concat('sku', parameters('linuxOS')))]",
+              "publisher": "[variables('imagePublisher')]",
+              "offer": "[variables('imageOffer')]",
+              "sku": "[variables('imageSku')]",
               "version": "latest"
             }
           },
@@ -547,18 +498,18 @@
               {
                 "name": "customScript",
                 "properties": {
-                  "publisher": "Microsoft.OSTCExtensions",
+                  "publisher": "Microsoft.Compute",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.py')]"                      
+                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.ps1')]"                      
                     ]
                   },
-                  "typeHandlerVersion": "1.4",
+                  "typeHandlerVersion": "1.8",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('python Configure-ComputeNode.py \"', parameters('poolInitialSize'), '\" \"', parameters('poolMaxSize'), '\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-ComputeNode.ps1 -poolInitialSize \"', parameters('poolInitialSize'), '\" -poolMaxSize \"', parameters('poolMaxSize'), '\"')]"
                   },
-                  "type": "CustomScriptForLinux"
+                  "type": "CustomScriptExtension"
                 }
               }
             ]
@@ -582,9 +533,9 @@
           {
             "name": "Profile1",
             "capacity": {
-              "minimum": "[parameters('webNodeInstanceCount')]",
-              "maximum": 100,
-              "default": "[parameters('webNodeInstanceCount')]"
+              "minimum": "[parameters('computeNodeInstanceCount')]",
+              "maximum": "100",
+              "default": "[parameters('computeNodeInstanceCount')]"
             },
             "rules": [
               {
@@ -634,9 +585,6 @@
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vnetName')]",
       "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
-      ],
       "apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
       "properties": {
         "addressSpace": {
@@ -648,19 +596,19 @@
           {
             "name": "[variables('feSubnetName')]",
             "properties": {
-              "addressPrefix": "10.0.0.0/24",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
-              }
+              "addressPrefix": "10.0.0.0/24"
             }
           },
           {
             "name": "[variables('beSubnetName')]",
             "properties": {
-              "addressPrefix": "10.0.1.0/24",
-              "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
-              }
+              "addressPrefix": "10.0.1.0/24"
+            }
+          },
+          {
+            "name": "[variables('appGwSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('appGwSubnetPrefix')]"
             }
           }
         ]
@@ -716,19 +664,19 @@
               "probe": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/probes/lbprobe')]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": 80,
-              "backendPort": 12800,
+              "backendPort": 80,
               "enableFloatingIP": false,
-              "idleTimeoutInMinutes": 30
+              "idleTimeoutInMinutes": 5
             }
           }
         ],
         "probes": [
           {
             "properties": {
-              "protocol": "tcp",
-              "port": 12800,
+              "protocol": "Tcp",
+              "port": 80,
               "intervalInSeconds": 10,
               "numberOfProbes": 2
             },
@@ -737,15 +685,138 @@
         ],
         "inboundNatPools": [
           {
-            "name": "[concat(variables('webNodeLoadBalancerNatPoolName'), 'SSH')]",
+            "name": "[concat(variables('webNodeLoadBalancerNatPoolName'), 'RDP')]",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/frontendIPConfigurations/', variables('webNodeLoadBalancerFrontEndName'))]"
               },
               "protocol": "tcp",
-              "frontendPortRangeStart": "50000",
-              "frontendPortRangeEnd": "50099",
-              "backendPort": "22"
+              "frontendPortRangeStart": 50000,
+              "frontendPortRangeEnd": 50099,
+              "backendPort": 3389
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('appGwPublicIPAddressName')]",
+      "location": "[resourceGroup().location]",
+      
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"        
+      }
+    },
+    {
+      "type": "Microsoft.Network/applicationGateways",
+      "name": "[variables('appGwName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[providers('Microsoft.Network','applicationGateways').apiVersions[0]]",
+      "dependsOn": [
+        "[variables('vnetID')]",
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('appGwPublicIPAddressName'))]"
+      ],
+      "properties": {
+        "sku": {
+          "name": "Standard_Medium",
+          "tier": "Standard",
+          "capacity": "3"
+        },
+        "gatewayIPConfigurations": [
+          {
+            "name": "appGwIpConfig",
+            "properties": {
+              "subnet": {
+                "id": "[variables('appGwSubnetID')]"
+              }
+            }
+          }
+        ],
+        "frontendIPConfigurations": [
+          {
+            "name": "appGwFrontendIP",
+            "properties": {
+              "PublicIPAddress": {
+                "id": "[variables('appGwPublicIPAddressID')]"
+              }
+            }
+          }
+        ],
+        "frontendPorts": [
+          {
+            "name": "appGwFrontendHttpPort",
+            "properties": {
+              "Port": "80"
+            }
+          },
+          {
+            "name": "appGwFrontendHttpsPort",
+            "properties": {
+              "Port": "443"
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('appGwBePoolName')]"
+          }
+        ],
+        "backendHttpSettingsCollection": [
+          {
+            "name": "appGwBackendHttpSettings",
+            "properties": {
+              "Port": "[variables('appGwBackendPort')]",
+              "Protocol": "Http",
+              "CookieBasedAffinity": "Disabled",
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('appGwName')), '/probes/probe1')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "probe1",
+            "properties": {
+              "protocol": "http",
+              "host": "127.0.0.1",
+              "path": "/ping",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 5
+            }
+          }
+        ],
+        "httpListeners": [
+          {
+            "name": "HTTP",
+            "properties": {
+              "FrontendIPConfiguration": {
+                "Id": "[concat(variables('appGwID'), '/frontendIPConfigurations/appGwFrontendIP')]"
+              },
+              "FrontendPort": {
+                "Id": "[concat(variables('appGwID'), '/frontendPorts/appGwFrontendHttpPort')]"
+              },
+              "Protocol": "Http",
+              "SslCertificate": null
+            }
+          }
+        ],
+        "requestRoutingRules": [
+          {
+            "Name": "rule1",
+            "properties": {
+              "RuleType": "Basic",
+              "httpListener": {
+                "id": "[concat(variables('appGwID'), '/httpListeners/HTTP')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('appGwID'), '/backendAddressPools/', variables('appGwBePoolName'))]"
+              },
+              "backendHttpSettings": {
+                "id": "[concat(variables('appGwID'), '/backendHttpSettingsCollection/appGwBackendHttpSettings')]"
+              }
             }
           }
         ]

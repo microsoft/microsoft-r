@@ -61,20 +61,6 @@
       "metadata": {
         "description": "Size of VM"
       } 
-    },
-    "windowsOSVersion": {
-      "type": "string",
-      "defaultValue": "2016-Datacenter",
-      "allowedValues": [ "2012-R2-Datacenter", "2016-Datacenter" ],
-      "metadata": {
-        "description": "The Windows OS version for the VM"
-      }
-    },
-    "mlserverbinary": {
-      "type": "string",
-      "metadata": {
-        "description": "URL to download Microsoft Machine Learning Server for Windows"
-      }
     }
   },
   "variables": {
@@ -90,7 +76,7 @@
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
     "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
     "scriptFileName": "Configure-Onebox.ps1",
-    "scriptParameters": "[concat(' -password \"', parameters('adminPassword'), '\"', ' -mlserverbinary \"', parameters('mlserverbinary'), '\"')]"
+    "scriptParameters": "[concat(' -password \"', parameters('adminPassword'), '\"')]"
   },
   "resources": [
     {
@@ -228,9 +214,9 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "MicrosoftWindowsServer",
-            "offer": "WindowsServer",
-            "sku": "[parameters('windowsOSVersion')]",
+            "publisher": "MicrosoftRServer",
+            "offer": "MLServer-WS2016",
+            "sku": "Enterprise",
             "version": "latest"
           },
           "osDisk": {

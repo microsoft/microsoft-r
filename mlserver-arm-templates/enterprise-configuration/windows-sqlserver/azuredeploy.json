@@ -2,32 +2,12 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "adminUsername": {
-      "type": "string",
-      "metadata": {
-        "description": "Admin username on all VMs."
-      }
-    },
-    "adminPassword": {
-      "type": "securestring",
-      "metadata": {
-        "description": "Admin password on all VMs."
-      }
-    },
     "dnsPrefix": {
       "type": "string",
       "metadata": {
         "description": "String used as a base for naming resources. Must be 3-61 characters in length and globally unique across Azure. A hash is prepended to this string for some resources, and resource-specific information is appended."
       },
       "maxLength": 61
-    },
-    "webNodeInstanceCount": {
-      "type": "int",
-      "metadata": {
-        "description": "Number of VM instances (100 or less)."
-      },
-      "defaultValue": 2,
-      "maxValue": 100
     },
     "webNodeVMSku": {
       "type": "string",
@@ -71,14 +51,6 @@
         "description": "Size of the Web Node VMs."
       }
     },
-    "computeNodeInstanceCount": {
-      "type": "int",
-      "metadata": {
-        "description": "Number of VM instances (100 or less)."
-      },
-      "defaultValue": 2,
-      "maxValue": 100
-    },
     "computeNodeVMSku": {
       "type": "string",
       "defaultValue": "Standard_D4_v2",
@@ -121,6 +93,22 @@
         "description": "Size of the Compute Node VMs."
       }
     },
+    "webNodeInstanceCount": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of VM instances for WebNodes (100 or less)."
+      },
+      "defaultValue": 2,
+      "maxValue": 100
+    },
+    "computeNodeInstanceCount": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of VM instances for ComputeNodes (100 or less)."
+      },
+      "defaultValue": 2,
+      "maxValue": 100
+    },
     "poolInitialSize": {
       "type": "int",
       "metadata": {
@@ -136,10 +124,37 @@
       },
       "defaultValue": 500,
       "maxValue": 1000
-    }   
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username on all VMs."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password on all VMs. Must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s)"
+      }
+    },
+    "aadTenant": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure ActiveDirectory tenant."
+      },
+      "defaultValue": ""
+    },
+    "aadClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure ActiveDirectory client id for the web application."
+      },
+      "defaultValue": ""
+    }
   },
   "variables": {
     "namingInfix": "[toLower(substring(concat(parameters('dnsPrefix'), uniqueString(resourceGroup().id)), 0, 9))]",
+    "storageAccountType": "Standard_LRS",
     "newStorageAccountSuffix": "[concat(variables('namingInfix'), 'sa')]",
     "uniqueStringArray": [
       "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '0')))]",
@@ -149,14 +164,15 @@
       "[concat(uniqueString(concat(resourceGroup().id, variables('newStorageAccountSuffix'), '4')))]"
     ],
     "saCount": "[length(variables('uniqueStringArray'))]",
+    "sqlserverName": "[concat('mrsdb', uniqueString(resourceGroup().id))]",
+    "databaseName": "mrsdb",
     "vnetName": "vnet",
-    "sqlvnetName": "sqlvnet",
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
-    "publicIPAddressName": "PublicIP",
     "feSubnetName": "WebNodeSubnet",
     "beSubnetName": "ComputeNodeSubnet",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
     "feSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('feSubnetName'))]",
     "beSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('beSubnetName'))]",
+    "publicIPAddressName": "PublicIP",
     "webNodeLoadBalancerName": "webNodeLoadBalancer",
     "webNodeLoadBalancerFrontEndName": "webNodeLoadBalancerFrontEnd",
     "webNodeLoadBalancerBackEndName": "webNodeLoadBalancerBackEnd",
@@ -166,247 +182,72 @@
     "appGwPublicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses', variables('appGwPublicIPAddressName'))]",
     "appGwID": "[resourceId('Microsoft.Network/applicationGateways',variables('appGwName'))]",
     "appGwSubnetName": "[concat(variables('namingInfix'),'appGwSubnet')]",
-    "appGwSubnetPrefix": "10.1.2.0/24",
+    "appGwSubnetPrefix": "10.0.2.0/24",
     "appGwSubnetID": "[concat(variables('vnetID'),'/subnets/', variables('appGwSubnetName'))]",
     "appGwBackendPort": 80,
     "appGwBePoolName": "AppGatewayBePool",
-    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
-    "imagePublisher": "microsoft-ads",
-    "imageOffer": "windows-data-science-vm",
-    "sku": "windows2016"
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
   },
   "resources": [
     {
-      "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('vnetName')]",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2016-03-30",
-      "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "10.1.0.0/16"
-          ]
-        },
-        "subnets": [
-          {
-            "name": "[variables('feSubnetName')]",
-            "properties": {
-              "addressPrefix": "10.1.0.0/24"
-            }
-          },
-          {
-            "name": "[variables('beSubnetName')]",
-            "properties": {
-              "addressPrefix": "10.1.1.0/24"
-            }
-          },
-          {
-            "name": "[variables('appGwSubnetName')]",
-            "properties": {
-              "addressPrefix": "[variables('appGwSubnetPrefix')]"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "sql_server_always_on_cluster",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[providers('Microsoft.Resources','deployments').apiVersions[0]]",
-      "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(variables('scriptsUri'), 'sql_server_always_on_cluster.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "adminUsername": {
-            "value": "[parameters('adminUsername')]"
-          },
-          "adminPassword": {
-            "value": "[parameters('adminPassword')]"
-          },
-          "adVMSize": {
-            "value": "Standard_DS2_v2"
-          },
-          "sqlVMSize": {
-            "value": "Standard_DS2_v2"
-          },
-          "witnessVMSize": {
-            "value": "Standard_DS2_v2"
-          },
-          "domainName": {
-            "value": "contoso.com"
-          },
-          "sqlServerServiceAccountUserName": {
-            "value": "sqlservice"
-          },
-          "sqlServerServiceAccountPassword": {
-            "value": "[parameters('adminPassword')]"
-          },
-          "sqlStorageAccountName": {
-            "value": "[variables('namingInfix')]"
-          },
-          "sqlStorageAccountType": {
-            "value": "Premium_LRS"
-          },
-          "virtualNetworkAddressRange": {
-            "value": "10.0.0.0/16"
-          },
-          "staticSubnet": {
-            "value": "10.0.0.0/24"
-          },
-          "sqlSubnet": {
-            "value": "10.0.1.0/26"
-          },
-          "adPDCNICIPAddress": {
-            "value": "10.0.0.4"
-          },
-          "adBDCNICIPAddress": {
-            "value": "10.0.0.5"
-          },
-          "sqlLBIPAddress": {
-            "value": "10.0.1.9"
-          },
-          "deploymentPrefix": {
-            "value": "aodns"
-          },
-          "virtualNetworkName": {
-            "value": "[variables('sqlvnetName')]"
-          },
-          "autoPatchingDay": {
-            "value": "Sunday"
-          },
-          "autoPatchingStartHour": {
-            "value": "2"
-          },
-          "sqlAOAGName": {
-            "value": "Contoso-ag"
-          },
-          "sqlAOListenerPort": {
-            "value": "1433"
-          },
-          "sqlAOListenerName": {
-            "value": "Contoso-listener"
-          },
-          "sqlServerVersion": {
-            "value": "SQL2016-WS2012R2-ENT"
-          },
-          "numberOfSqlVMDisks": {
-            "value": "1"
-          },
-          "workloadType": {
-            "value": "GENERAL"
-          }
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "ad-primary-dc/setUserPrincipalName",
-      "apiVersion": "[providers('Microsoft.Compute','virtualMachines/extensions').apiVersions[0]]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/sql_server_always_on_cluster')]"
-      ],
-      "properties": {
-        "publisher": "Microsoft.Compute",
-        "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.8",
-        "autoUpgradeMinorVersion": true,
-        "settings": {
-          "fileUris": [
-            "[concat(variables('scriptsUri'), 'setUserPrincipalName.ps1')]"
-          ],
-          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File setUserPrincipalName.ps1', ' -password \"', parameters('adminPassword'), '\" -username \"', parameters('adminUsername'), '\"')]"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "sqlserver-0/sqlServer0AuthenticationSetup",
-      "apiVersion": "[providers('Microsoft.Compute','virtualMachines/extensions').apiVersions[0]]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/sql_server_always_on_cluster')]"
-      ],
-      "properties": {
-        "publisher": "Microsoft.Compute",
-        "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.8",
-        "autoUpgradeMinorVersion": true,
-        "settings": {
-          "fileUris": [
-            "[concat(variables('scriptsUri'), 'sqlServerAuthenticationSetup.ps1')]"
-          ],
-          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File sqlServerAuthenticationSetup.ps1', ' -password \"', parameters('adminPassword'), '\" -username \"', parameters('adminUsername'), '\"')]"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "sqlserver-1/sqlServer1AuthenticationSetup",
-      "apiVersion": "[providers('Microsoft.Compute','virtualMachines/extensions').apiVersions[0]]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/sql_server_always_on_cluster')]"
-      ],
-      "properties": {
-        "publisher": "Microsoft.Compute",
-        "type": "CustomScriptExtension",
-        "typeHandlerVersion": "1.8",
-        "autoUpgradeMinorVersion": true,
-        "settings": {
-          "fileUris": [
-            "[concat(variables('scriptsUri'), 'sqlServerAuthenticationSetup.ps1')]"
-          ],
-          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File sqlServerAuthenticationSetup.ps1', ' -password \"', parameters('adminPassword'), '\" -username \"', parameters('adminUsername'), '\"')]"
-        }
-      }
-    },
-    {
-      "name": "vnetpeering",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[providers('Microsoft.Resources','deployments').apiVersions[0]]",
-      "dependsOn": [
-        "[concat('Microsoft.Resources/deployments/sql_server_always_on_cluster')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(variables('scriptsUri'), 'vnetpeering.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "vnetName": {
-            "value": "[variables('vnetName')]"
-          },
-          "sqlvnetName": {
-            "value": "[variables('sqlvnetName')]"
-          }
-        }
-      }
-    },
-    {
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[concat(variables('uniqueStringArray')[copyIndex()], variables('newStorageAccountSuffix'))]",
+      "name": "[concat('sa', variables('uniqueStringArray')[copyIndex()])]",
       "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "Microsoft.Resources/deployments/vnetpeering"
-      ],
       "apiVersion": "[providers('Microsoft.Storage','storageAccounts').apiVersions[0]]",
       "copy": {
         "name": "storageLoop",
         "count": "[variables('saCount')]"
       },
-      "sku": {
-        "name": "Standard_LRS"
+      "properties": {
+        "accountType": "[variables('storageAccountType')]"
+      }
+    },
+    {
+      "name": "[variables('sqlserverName')]",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "SqlServer"
       },
-      "kind": "Storage",
-      "properties": {}
+      "apiVersion": "2014-04-01",
+      "properties": {
+        "administratorLogin": "[parameters('adminUsername')]",
+        "administratorLoginPassword": "[parameters('adminPassword')]",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "name": "[variables('databaseName')]",
+          "type": "databases",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Database"
+          },
+          "apiVersion": "2015-01-01",
+          "dependsOn": [
+            "[variables('sqlserverName')]"
+          ],
+          "properties": {
+            "edition": "Basic",
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": "1073741824",
+            "requestedServiceObjectiveName": "Basic"
+          }
+        },
+        {
+          "type": "firewallRules",
+          "apiVersion": "2014-04-01",
+          "dependsOn": [
+            "[variables('sqlserverName')]"
+          ],
+          "location": "[resourceGroup().location]",
+          "name": "AllowAllWindowsAzureIps",
+          "properties": {
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
+          }
+        }
+      ]
     },
     {
       "type": "Microsoft.Compute/virtualMachineScaleSets",
@@ -415,20 +256,15 @@
       "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
       "dependsOn": [
         "storageLoop",
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
         "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
       ],
       "sku": {
         "name": "[parameters('webNodeVMSku')]",
-        "tier": "Standard",
         "capacity": "[parameters('webNodeInstanceCount')]"
       },
-      "plan": {
-        "name": "[variables('sku')]",
-        "publisher": "[variables('imagePublisher')]",
-        "product": "[variables('imageOffer')]"
-      },
       "properties": {
-        "overprovision": false,
+        "overprovision": "false",
         "upgradePolicy": {
           "mode": "Manual"
         },
@@ -436,19 +272,19 @@
           "storageProfile": {
             "osDisk": {
               "vhdContainers": [
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[0], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[1], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[2], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[3], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[4], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]"
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[0]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[1]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[2]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[3]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[4]), '2015-06-15').primaryEndpoints.blob, 'vhds')]"
               ],
               "name": "osdisk",
               "createOption": "FromImage"
             },
             "imageReference": {
-              "publisher": "[variables('imagePublisher')]",
-              "offer": "[variables('imageOffer')]",
-              "sku": "[variables('sku')]",
+              "publisher": "MicrosoftRServer",
+              "offer": "MLServer-WS2016",
+              "sku": "Enterprise",
               "version": "latest"
             }
           },
@@ -500,13 +336,13 @@
                   "publisher": "Microsoft.Compute",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-WebNode.ps1')]"    
+                      "[concat(variables('scriptsUri'), 'Configure-WebNode.ps1')]"                      
                     ]
                   },
-                  "typeHandlerVersion": "1.7",
-                  "autoUpgradeMinorVersion": false,
+                  "typeHandlerVersion": "1.8",
+                  "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1', ' -password \"', parameters('adminPassword'), '\" -username \"', parameters('adminUsername'), '\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -mlserverbinary \"', parameters('mlserverbinary'), '\" -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -sqlServerConnectionString \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=''', parameters('adminPassword'), ''';'), '\"')]"
                   },
                   "type": "CustomScriptExtension"
                 }
@@ -517,7 +353,7 @@
       }
     },
     {
-      "type": "Microsoft.Insights/autoscalesettings",
+      "type": "Microsoft.Insights/autoscaleSettings",
       "apiVersion": "[providers('Microsoft.Insights','autoscaleSettings').apiVersions[0]]",
       "name": "autoscalewn",
       "location": "[resourceGroup().location]",
@@ -526,14 +362,14 @@
       ],
       "properties": {
         "name": "autoscalewn",
-        "targetResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
+        "targetResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
         "enabled": true,
         "profiles": [
           {
             "name": "Profile1",
             "capacity": {
               "minimum": "[parameters('webNodeInstanceCount')]",
-              "maximum": 100,
+              "maximum": "100",
               "default": "[parameters('webNodeInstanceCount')]"
             },
             "rules": [
@@ -541,18 +377,18 @@
                 "metricTrigger": {
                   "metricName": "Percentage CPU",
                   "metricNamespace": "",
-                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
+                  "metricResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
                   "timeWindow": "PT5M",
                   "timeAggregation": "Average",
                   "operator": "GreaterThan",
-                  "threshold": 75.0
+                  "threshold": 50.0
                 },
                 "scaleAction": {
                   "direction": "Increase",
                   "type": "ChangeCount",
-                  "value": 1,
+                  "value": "1",
                   "cooldown": "PT5M"
                 }
               },
@@ -560,19 +396,19 @@
                 "metricTrigger": {
                   "metricName": "Percentage CPU",
                   "metricNamespace": "",
-                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
+                  "metricResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
-                  "timeWindow": "PT5M",
+                  "timeWindow": "PT30M",
                   "timeAggregation": "Average",
                   "operator": "LessThan",
-                  "threshold": 25.0
+                  "threshold": 30.0
                 },
                 "scaleAction": {
                   "direction": "Decrease",
                   "type": "ChangeCount",
-                  "value": 1,
-                  "cooldown": "PT5M"
+                  "value": "1",
+                  "cooldown": "PT30M"
                 }
               }
             ]
@@ -584,24 +420,18 @@
       "type": "Microsoft.Compute/virtualMachineScaleSets",
       "name": "ComputeNodes",
       "location": "[resourceGroup().location]",
-      "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
+      "apiVersion": "2016-03-30",
       "dependsOn": [
         "storageLoop",
-        "Microsoft.Resources/deployments/vnetpeering",
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
         "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
       ],
       "sku": {
         "name": "[parameters('computeNodeVMSku')]",
-        "tier": "Standard",
         "capacity": "[parameters('computeNodeInstanceCount')]"
       },
-      "plan": {
-        "name": "[variables('sku')]",
-        "publisher": "[variables('imagePublisher')]",
-        "product": "[variables('imageOffer')]"
-      },
       "properties": {
-        "overprovision": false,
+        "overprovision": "false",
         "upgradePolicy": {
           "mode": "Manual"
         },
@@ -609,19 +439,19 @@
           "storageProfile": {
             "osDisk": {
               "vhdContainers": [
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[0], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[1], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[2], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[3], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('uniqueStringArray')[4], variables('newStorageAccountSuffix')), '2015-06-15').primaryEndpoints.blob, 'vhds')]"
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[0]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[1]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[2]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[3]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
+                "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[4]), '2015-06-15').primaryEndpoints.blob, 'vhds')]"
               ],
               "name": "osdisk",
               "createOption": "FromImage"
             },
             "imageReference": {
-              "publisher": "[variables('imagePublisher')]",
-              "offer": "[variables('imageOffer')]",
-              "sku": "[variables('sku')]",
+              "publisher": "MicrosoftRServer",
+              "offer": "MLServer-WS2016",
+              "sku": "Enterprise",
               "version": "latest"
             }
           },
@@ -658,11 +488,11 @@
                   "publisher": "Microsoft.Compute",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.ps1')]"    
+                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.ps1')]"                      
                     ]
                   },
-                  "typeHandlerVersion": "1.7",
-                  "autoUpgradeMinorVersion": false,
+                  "typeHandlerVersion": "1.8",
+                  "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
                     "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-ComputeNode.ps1 -poolInitialSize \"', parameters('poolInitialSize'), '\" -poolMaxSize \"', parameters('poolMaxSize'), '\"')]"
                   },
@@ -675,7 +505,7 @@
       }
     },
     {
-      "type": "Microsoft.Insights/autoscalesettings",
+      "type": "Microsoft.Insights/autoscaleSettings",
       "apiVersion": "[providers('Microsoft.Insights','autoscaleSettings').apiVersions[0]]",
       "name": "autoscalecn",
       "location": "[resourceGroup().location]",
@@ -684,14 +514,14 @@
       ],
       "properties": {
         "name": "autoscalecn",
-        "targetResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
+        "targetResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
         "enabled": true,
         "profiles": [
           {
             "name": "Profile1",
             "capacity": {
               "minimum": "[parameters('computeNodeInstanceCount')]",
-              "maximum": 100,
+              "maximum": "100",
               "default": "[parameters('computeNodeInstanceCount')]"
             },
             "rules": [
@@ -699,18 +529,18 @@
                 "metricTrigger": {
                   "metricName": "Percentage CPU",
                   "metricNamespace": "",
-                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
+                  "metricResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
                   "timeWindow": "PT5M",
                   "timeAggregation": "Average",
                   "operator": "GreaterThan",
-                  "threshold": 75.0
+                  "threshold": 50.0
                 },
                 "scaleAction": {
                   "direction": "Increase",
                   "type": "ChangeCount",
-                  "value": 1,
+                  "value": "1",
                   "cooldown": "PT5M"
                 }
               },
@@ -718,22 +548,55 @@
                 "metricTrigger": {
                   "metricName": "Percentage CPU",
                   "metricNamespace": "",
-                  "metricResourceUri": "[concat('/subscriptions/',subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
+                  "metricResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
-                  "timeWindow": "PT5M",
+                  "timeWindow": "PT60M",
                   "timeAggregation": "Average",
                   "operator": "LessThan",
-                  "threshold": 25.0
+                  "threshold": 30.0
                 },
                 "scaleAction": {
                   "direction": "Decrease",
                   "type": "ChangeCount",
-                  "value": 1,
-                  "cooldown": "PT5M"
+                  "value": "1",
+                  "cooldown": "PT60M"
                 }
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('feSubnetName')]",
+            "properties": {
+              "addressPrefix": "10.0.0.0/24"
+            }
+          },
+          {
+            "name": "[variables('beSubnetName')]",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24"
+            }
+          },
+          {
+            "name": "[variables('appGwSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('appGwSubnetPrefix')]"
+            }
           }
         ]
       }
@@ -743,9 +606,6 @@
       "name": "[variables('publicIPAddressName')]",
       "location": "[resourceGroup().location]",
       "apiVersion": "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]",
-      "dependsOn": [
-        "storageLoop"
-      ],
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "idleTimeoutInMinutes": 30,
@@ -780,7 +640,7 @@
         ],
         "loadBalancingRules": [
           {
-            "name": "roundRobinLBRule",
+            "name": "HTTP",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/frontendIPConfigurations/', variables('webNodeLoadBalancerFrontEndName'))]"
@@ -791,7 +651,7 @@
               "probe": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/probes/lbprobe')]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": 80,
               "backendPort": 80,
               "enableFloatingIP": false,
@@ -802,7 +662,7 @@
         "probes": [
           {
             "properties": {
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "port": 80,
               "intervalInSeconds": 10,
               "numberOfProbes": 2
@@ -818,9 +678,9 @@
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/frontendIPConfigurations/', variables('webNodeLoadBalancerFrontEndName'))]"
               },
               "protocol": "tcp",
-              "frontendPortRangeStart": "50000",
-              "frontendPortRangeEnd": "50099",
-              "backendPort": "3389"
+              "frontendPortRangeStart": 50000,
+              "frontendPortRangeEnd": 50099,
+              "backendPort": 3389
             }
           }
         ]
@@ -830,16 +690,16 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('appGwPublicIPAddressName')]",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2016-06-01",
+      
       "properties": {
-        "publicIPAllocationMethod": "Dynamic"
+        "publicIPAllocationMethod": "Dynamic"        
       }
     },
     {
       "type": "Microsoft.Network/applicationGateways",
       "name": "[variables('appGwName')]",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2016-06-01",
+      "apiVersion": "[providers('Microsoft.Network','applicationGateways').apiVersions[0]]",
       "dependsOn": [
         "[variables('vnetID')]",
         "[concat('Microsoft.Network/publicIPAddresses/', variables('appGwPublicIPAddressName'))]"
