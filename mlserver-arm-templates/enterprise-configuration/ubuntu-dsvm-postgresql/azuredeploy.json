@@ -327,13 +327,6 @@
               {
                 "name": "datadisk1",
                 "lun": 1,
-                "vhdContainers": [
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[0]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[1]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[2]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[3]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[4]), '2015-06-15').primaryEndpoints.blob, 'vhds')]"
-                ],
                 "caching": "None",
                 "createOption": "FromImage"
               }
@@ -510,13 +503,6 @@
               {
                 "name": "datadisk1",
                 "lun": 1,
-                "vhdContainers": [
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[0]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[1]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[2]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[3]), '2015-06-15').primaryEndpoints.blob, 'vhds')]",
-                  "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[4]), '2015-06-15').primaryEndpoints.blob, 'vhds')]"
-                ],
                 "caching": "None",
                 "createOption": "FromImage"
               }
