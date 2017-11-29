@@ -326,7 +326,7 @@
             "dataDisks": [
               {
                 "name": "datadisk1",
-                "lun": 1,
+                "lun": 0,
                 "vhd": {
                   "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[4]), '2015-06-15').primaryEndpoints.blob, 'vhds/datadisk1.vhd')]"
                 },
@@ -505,7 +505,7 @@
             "dataDisks": [
               {
                 "name": "datadisk1",
-                "lun": 1,
+                "lun": 0,
                 "vhd": {
                   "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/sa', variables('uniqueStringArray')[4]), '2015-06-15').primaryEndpoints.blob, 'vhds/datadisk1.vhd')]"
                 },
