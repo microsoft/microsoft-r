@@ -426,7 +426,6 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
       "dependsOn": [
-        "storageLoop",
         "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
         "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
       ],
