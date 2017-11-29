@@ -1,0 +1,694 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dnsPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "String used as a base for naming resources. Must be 3-61 characters in length and globally unique across Azure. A hash is prepended to this string for some resources, and resource-specific information is appended."
+      },
+      "maxLength": 61
+    },
+    "webNodeVMSku": {
+      "type": "string",
+      "defaultValue": "Standard_D2_v2",
+      "allowedValues": [
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2",
+        "Standard_D5_v2",
+        "Standard_D11_v2",
+        "Standard_D12_v2",
+        "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2",
+        "Standard_D2",
+        "Standard_D3",
+        "Standard_D4",
+        "Standard_D11",
+        "Standard_D12",
+        "Standard_D13",
+        "Standard_D14",
+        "Standard_DS1",
+        "Standard_DS2",
+        "Standard_DS3",
+        "Standard_DS4",
+        "Standard_DS11",
+        "Standard_DS12",
+        "Standard_DS13",
+        "Standard_DS14",
+        "Standard_DS2_v2",
+        "Standard_DS3_v2",
+        "Standard_DS4_v2",
+        "Standard_DS5_v2",
+        "Standard_DS11_v2",
+        "Standard_DS12_v2",
+        "Standard_DS13_v2",
+        "Standard_DS14_v2",
+        "Standard_DS15_v2"
+      ],
+      "metadata": {
+        "description": "Size of the Web Node VMs."
+      }
+    },
+    "computeNodeVMSku": {
+      "type": "string",
+      "defaultValue": "Standard_D4_v2",
+      "allowedValues": [
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2",
+        "Standard_D5_v2",
+        "Standard_D11_v2",
+        "Standard_D12_v2",
+        "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2",
+        "Standard_D2",
+        "Standard_D3",
+        "Standard_D4",
+        "Standard_D11",
+        "Standard_D12",
+        "Standard_D13",
+        "Standard_D14",
+        "Standard_DS1",
+        "Standard_DS2",
+        "Standard_DS3",
+        "Standard_DS4",
+        "Standard_DS11",
+        "Standard_DS12",
+        "Standard_DS13",
+        "Standard_DS14",
+        "Standard_DS2_v2",
+        "Standard_DS3_v2",
+        "Standard_DS4_v2",
+        "Standard_DS5_v2",
+        "Standard_DS11_v2",
+        "Standard_DS12_v2",
+        "Standard_DS13_v2",
+        "Standard_DS14_v2",
+        "Standard_DS15_v2"
+      ],
+      "metadata": {
+        "description": "Size of the Compute Node VMs."
+      }
+    },
+    "webNodeInstanceCount": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of VM instances for WebNodes (100 or less)."
+      },
+      "defaultValue": 2,
+      "maxValue": 100
+    },
+    "computeNodeInstanceCount": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of VM instances for ComputeNodes (100 or less)."
+      },
+      "defaultValue": 2,
+      "maxValue": 100
+    },
+    "poolInitialSize": {
+      "type": "int",
+      "metadata": {
+        "description": "Pool size at startup of ComputeNode."
+      },
+      "defaultValue": 5,
+      "maxValue": 1000
+    },
+    "poolMaxSize": {
+      "type": "int",
+      "metadata": {
+        "description": "Max pool size per ComputeNode. Must be larger than poolInitialSize."
+      },
+      "defaultValue": 500,
+      "maxValue": 1000
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username on all VMs."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password on all VMs. Must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s)"
+      }
+    },
+    "aadTenant": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure ActiveDirectory tenant."
+      },
+      "defaultValue": ""
+    },
+    "aadClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure ActiveDirectory client id for the web application."
+      },
+      "defaultValue": ""
+    }
+  },
+  "variables": {
+    "postgresqlName": "[concat('mrsdb', uniqueString(resourceGroup().id))]",
+    "databaseName": "mrsdb",
+    "vnetName": "vnet",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+    "networkSecurityGroupName": "[concat(parameters('dnsPrefix'), 'NSG')]",
+    "feSubnetName": "WebNodeSubnet",
+    "beSubnetName": "ComputeNodeSubnet",
+    "feSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('feSubnetName'))]",
+    "beSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('beSubnetName'))]",
+    "publicIPAddressName": "PublicIP",
+    "webNodeLoadBalancerName": "webNodeLoadBalancer",
+    "webNodeLoadBalancerFrontEndName": "webNodeLoadBalancerFrontEnd",
+    "webNodeLoadBalancerBackEndName": "webNodeLoadBalancerBackEnd",
+    "webNodeLoadBalancerNatPoolName": "webNodeLoadBalancerNatPool",
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
+    "imagePublisher": "microsoft-ads",
+    "imageOffer": "linux-data-science-vm-ubuntu",
+    "imageSku": "linuxdsvmubuntu"
+  },
+  "resources": [
+    {
+      "apiVersion": "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('networkSecurityGroupName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH",
+            "properties": {
+              "description": "Allows SSH traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "WebNode",
+            "properties": {
+              "description": "Allows WebNode traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "12800",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "ComputeNode",
+            "properties": {
+              "description": "Allows ComputeNode traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "12805",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 102,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.DBforPostgreSQL/servers",
+      "sku": {
+          "name": "PGSQLB100",
+          "tier": "Basic",
+          "capacity": 100,
+          "size": 51200,
+          "family": "SkuFamily"
+      },
+      "kind": "",
+      "name": "[variables('postgresqlName')]",
+      "apiVersion": "2016-02-01-privatepreview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+          "version": "9.6",
+          "administratorLogin": "[parameters('adminUsername')]",
+          "administratorLoginPassword": "[parameters('adminPassword')]",
+          "storageMB": 51200
+      },
+      "resources":[
+        {
+          "type":"firewallrules",
+          "apiVersion":"2016-02-01-privatepreview",
+          "dependsOn":[
+            "[concat('Microsoft.DBforPostgreSQL/servers/', variables('postgresqlName'))]"
+          ],
+          "location":"[resourceGroup().location]",
+          "name":"AllowAll",
+          "properties":{
+            "startIpAddress":"0.0.0.0",
+            "endIpAddress":"255.255.255.255"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "WebNodes",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
+      ],
+      "sku": {
+        "name": "[parameters('webNodeVMSku')]",
+        "capacity": "[parameters('webNodeInstanceCount')]"
+      },
+      "plan": {
+        "name": "[variables('imageSku')]",
+        "publisher": "[variables('imagePublisher')]",
+        "product": "[variables('imageOffer')]"
+      },
+      "properties": {
+        "overprovision": false,
+        "upgradePolicy": {
+          "mode": "Manual"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "caching": "ReadWrite",
+              "createOption": "FromImage"
+            },
+            "imageReference": {
+              "publisher": "[variables('imagePublisher')]",
+              "offer": "[variables('imageOffer')]",
+              "sku": "[variables('imageSku')]",
+              "version": "latest"
+            }
+          },
+          "osProfile": {
+            "computerNamePrefix": "WebNode",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPassword')]"
+          },
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "name": "nic",
+                "properties": {
+                  "primary": true,
+                  "ipConfigurations": [
+                    {
+                      "name": "ipconfig",
+                      "properties": {
+                        "subnet": {
+                          "id": "[variables('feSubnetRef')]"
+                        },
+                        "loadBalancerBackendAddressPools": [
+                          {
+                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('webNodeLoadBalancerName'), '/backendAddressPools/', variables('webNodeLoadBalancerBackEndName'))]"
+                          }
+                        ],
+                        "loadBalancerInboundNatPools": [
+                          {
+                            "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/loadBalancers/', variables('webNodeLoadBalancerName'), '/inboundNatPools/', variables('webNodeLoadBalancerNatPoolName'), 'SSH')]"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "extensionProfile": {
+            "extensions": [
+              {
+                "name": "customScript",
+                "properties": {
+                  "publisher": "Microsoft.OSTCExtensions",
+                  "settings": {
+                    "fileUris": [
+                      "[concat(variables('scriptsUri'), 'Configure-WebNode.py')]",
+                      "[concat(variables('scriptsUri'), '25706AA4612FC42476B8E6C72A97F58D4BB5721B.pfx')]"
+                    ]
+                  },
+                  "typeHandlerVersion": "1.4",
+                  "autoUpgradeMinorVersion": true,
+                  "protectedSettings": {
+                    "commandToExecute": "[concat('python Configure-WebNode.py \"', parameters('adminPassword'), '\" \"', parameters('aadTenant'), '\" \"', parameters('aadClientId'), '\" \"', concat('User ID=', parameters('adminUsername'), '@', variables('postgresqlName'), ';Password=', parameters('adminPassword'),';Server=', variables('postgresqlName'), '.postgres.database.azure.com;Port=5432;Database=', variables('databaseName'), ';Pooling=true;MinPoolSize=0;MaxPoolSize=250;SSL Mode=Prefer; Trust Server Certificate=true', '\"'))]"
+                  },
+                  "type": "CustomScriptForLinux"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Insights/autoscaleSettings",
+      "apiVersion": "[providers('Microsoft.Insights','autoscaleSettings').apiVersions[0]]",
+      "name": "autoscalewn",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "Microsoft.Compute/virtualMachineScaleSets/WebNodes"
+      ],
+      "properties": {
+        "name": "autoscalewn",
+        "targetResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
+        "enabled": true,
+        "profiles": [
+          {
+            "name": "Profile1",
+            "capacity": {
+              "minimum": "[parameters('webNodeInstanceCount')]",
+              "maximum": 100,
+              "default": "[parameters('webNodeInstanceCount')]"
+            },
+            "rules": [
+              {
+                "metricTrigger": {
+                  "metricName": "Percentage CPU",
+                  "metricNamespace": "",
+                  "metricResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
+                  "timeGrain": "PT1M",
+                  "statistic": "Average",
+                  "timeWindow": "PT5M",
+                  "timeAggregation": "Average",
+                  "operator": "GreaterThan",
+                  "threshold": 50.0
+                },
+                "scaleAction": {
+                  "direction": "Increase",
+                  "type": "ChangeCount",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                }
+              },
+              {
+                "metricTrigger": {
+                  "metricName": "Percentage CPU",
+                  "metricNamespace": "",
+                  "metricResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/WebNodes')]",
+                  "timeGrain": "PT1M",
+                  "statistic": "Average",
+                  "timeWindow": "PT30M",
+                  "timeAggregation": "Average",
+                  "operator": "LessThan",
+                  "threshold": 30.0
+                },
+                "scaleAction": {
+                  "direction": "Decrease",
+                  "type": "ChangeCount",
+                  "value": "1",
+                  "cooldown": "PT30M"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "ComputeNodes",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[providers('Microsoft.Compute','virtualMachineScaleSets').apiVersions[0]]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
+        "[resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName'))]"
+      ],
+      "sku": {
+        "name": "[parameters('computeNodeVMSku')]",
+        "capacity": "[parameters('computeNodeInstanceCount')]"
+      },
+      "plan": {
+        "name": "[variables('imageSku')]",
+        "publisher": "[variables('imagePublisher')]",
+        "product": "[variables('imageOffer')]"
+      },
+      "properties": {
+        "overprovision": false,
+        "upgradePolicy": {
+          "mode": "Manual"
+        },
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "caching": "ReadWrite",
+              "createOption": "FromImage"
+            },
+            "imageReference": {
+              "publisher": "[variables('imagePublisher')]",
+              "offer": "[variables('imageOffer')]",
+              "sku": "[variables('imageSku')]",
+              "version": "latest"
+            }
+          },
+          "osProfile": {
+            "computerNamePrefix": "CmptNode",
+            "adminUsername": "[parameters('adminUsername')]",
+            "adminPassword": "[parameters('adminPassword')]"
+          },
+          "networkProfile": {
+            "networkInterfaceConfigurations": [
+              {
+                "name": "nic",
+                "properties": {
+                  "primary": true,
+                  "ipConfigurations": [
+                    {
+                      "name": "ipconfig",
+                      "properties": {
+                        "subnet": {
+                          "id": "[variables('beSubnetRef')]"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "extensionProfile": {
+            "extensions": [
+              {
+                "name": "customScript",
+                "properties": {
+                  "publisher": "Microsoft.OSTCExtensions",
+                  "settings": {
+                    "fileUris": [
+                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.py')]"                      
+                    ]
+                  },
+                  "typeHandlerVersion": "1.4",
+                  "autoUpgradeMinorVersion": true,
+                  "protectedSettings": {
+                    "commandToExecute": "[concat('python Configure-ComputeNode.py \"', parameters('poolInitialSize'), '\" \"', parameters('poolMaxSize'), '\"')]"
+                  },
+                  "type": "CustomScriptForLinux"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Insights/autoscaleSettings",
+      "apiVersion": "[providers('Microsoft.Insights','autoscaleSettings').apiVersions[0]]",
+      "name": "autoscalecn",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "Microsoft.Compute/virtualMachineScaleSets/ComputeNodes"
+      ],
+      "properties": {
+        "name": "autoscalecn",
+        "targetResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
+        "enabled": true,
+        "profiles": [
+          {
+            "name": "Profile1",
+            "capacity": {
+              "minimum": "[parameters('webNodeInstanceCount')]",
+              "maximum": 100,
+              "default": "[parameters('webNodeInstanceCount')]"
+            },
+            "rules": [
+              {
+                "metricTrigger": {
+                  "metricName": "Percentage CPU",
+                  "metricNamespace": "",
+                  "metricResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
+                  "timeGrain": "PT1M",
+                  "statistic": "Average",
+                  "timeWindow": "PT5M",
+                  "timeAggregation": "Average",
+                  "operator": "GreaterThan",
+                  "threshold": 50.0
+                },
+                "scaleAction": {
+                  "direction": "Increase",
+                  "type": "ChangeCount",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                }
+              },
+              {
+                "metricTrigger": {
+                  "metricName": "Percentage CPU",
+                  "metricNamespace": "",
+                  "metricResourceUri": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',  resourceGroup().name, '/providers/Microsoft.Compute/virtualMachineScaleSets/ComputeNodes')]",
+                  "timeGrain": "PT1M",
+                  "statistic": "Average",
+                  "timeWindow": "PT60M",
+                  "timeAggregation": "Average",
+                  "operator": "LessThan",
+                  "threshold": 30.0
+                },
+                "scaleAction": {
+                  "direction": "Decrease",
+                  "type": "ChangeCount",
+                  "value": "1",
+                  "cooldown": "PT60M"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+      ],
+      "apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('feSubnetName')]",
+            "properties": {
+              "addressPrefix": "10.0.0.0/24",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+              }
+            }
+          },
+          {
+            "name": "[variables('beSubnetName')]",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIPAddressName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 30,
+        "dnsSettings": {
+          "domainNameLabel": "[toLower(parameters('dnsPrefix'))]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('webNodeLoadBalancerName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[providers('Microsoft.Network','loadBalancers').apiVersions[0]]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('webNodeLoadBalancerFrontEndName')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('webNodeLoadBalancerBackendName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "HTTP",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/frontendIPConfigurations/', variables('webNodeLoadBalancerFrontEndName'))]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/backendAddressPools/', variables('webNodeLoadBalancerBackendName'))]"
+              },
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/probes/lbprobe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 12800,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 30
+            }
+          }
+        ],
+        "probes": [
+          {
+            "properties": {
+              "protocol": "Tcp",
+              "port": 12800,
+              "intervalInSeconds": 10,
+              "numberOfProbes": 2
+            },
+            "name": "lbprobe"
+          }
+        ],
+        "inboundNatPools": [
+          {
+            "name": "[concat(variables('webNodeLoadBalancerNatPoolName'), 'SSH')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/frontendIPConfigurations/', variables('webNodeLoadBalancerFrontEndName'))]"
+              },
+              "protocol": "Tcp",
+              "frontendPortRangeStart": 50000,
+              "frontendPortRangeEnd": 50099,
+              "backendPort": 22
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
