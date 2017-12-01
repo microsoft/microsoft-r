@@ -54,8 +54,6 @@ To connect to your Windows Server VM, you can remote desktop using its Public IP
 ```
 mstsc /v:<dnsLabelPrefix>.<region>.cloudapp.azure.com
 ```
-<<<<<<< Updated upstream
-=======
 
 ## Python
 
@@ -76,4 +74,3 @@ https://docs.microsoft.com/en-us/machine-learning-server/operationalize/python/q
 https://github.com/Microsoft/ML-Server-Python-Samples/blob/master/operationalize/Quickstart_Publish_Python_Web_Service.ipynb
 
 https://github.com/Microsoft/ML-Server-Python-Samples/blob/master/operationalize/Explore_Consume_Python_Web_Services.ipynb
->>>>>>> Stashed changes
