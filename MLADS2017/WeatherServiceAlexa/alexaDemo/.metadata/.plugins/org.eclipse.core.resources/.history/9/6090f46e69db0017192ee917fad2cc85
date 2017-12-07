@@ -1,0 +1,101 @@
+package com.amazonaws.lambda.demo;
+
+import java.math.BigDecimal;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import io.swagger.client.ApiClient;
+import io.swagger.client.api.UserApi;
+import io.swagger.client.api.WeatherServiceApi;
+import io.swagger.client.model.AccessTokenResponse;
+import io.swagger.client.model.InputParameters;
+import io.swagger.client.model.LoginRequest;
+import io.swagger.client.model.WebServiceResult;
+
+public class LambdaFunctionHandler implements RequestHandler<Object, String> {
+
+    private static String bearerToken = null;
+
+    @Override
+    public String handleRequest(Object input, Context context) {
+        return GetWeatherSummary();
+    }
+
+	public String GetWeatherSummary() {
+		try
+		{
+			// Get authenticated client for weather service
+			WeatherServiceApi weatherClient =
+					new WeatherServiceApi(GetAuthenticatedClient());
+
+			// Build location input parameter for service 
+			InputParameters location = GetRedmondLocation();
+			
+			// Invoke the service
+			WebServiceResult weatherPrediction =
+					weatherClient.getWeatherReport(location);
+			
+			// Parse and return the summary of the weather report
+			return parseWeatherReport(weatherPrediction.getOutputParameters().getReport());
+		}
+		catch (Exception ex)
+		{
+			return "Hmm.. something went wrong.";
+		}
+	}
+	
+	private String parseWeatherReport(String reportJson)
+	{
+		JsonParser parser = new JsonParser();
+		JsonObject report =  parser.parse(reportJson).getAsJsonObject();
+		
+		// Get most current weather details
+		JsonObject info = report.get("list").getAsJsonArray().get(0).getAsJsonObject();
+		String description = info.get("weather").getAsJsonArray().get(0).getAsJsonObject().get("description").toString();
+		double tempInKelvin = info.get("main").getAsJsonObject().get("temp_min").getAsDouble();
+		int f = k2F(tempInKelvin);
+		String city = report.get("city").getAsJsonObject().get("name").toString();
+		return String.format("Today's weather prediction for %s is %s with a maximum temperature of %d farenheit and minimum temperature of %d farenheit.", city, description, f, f-3);
+		
+	}
+	
+	private int k2F(double kelvin)
+	{
+		return (int) Math.ceil(9.0*(kelvin-273)/5.0 + 32);
+	}
+	
+	private ApiClient GetAuthenticatedClient() throws Exception
+	{
+		if (bearerToken == null)
+		{
+			LoginRequest loginRequest = new LoginRequest();
+			loginRequest.setUsername("admin");
+			loginRequest.setPassword("Pa$$w0rd");
+			
+			ApiClient client = new ApiClient();
+			client.setBasePath("http://[ml-server-IP]:[ml-server-PORT]");
+			
+			UserApi api = new UserApi(client);
+			AccessTokenResponse tokenResponse = api.login(loginRequest);
+			bearerToken = tokenResponse.getAccessToken();
+		}
+		
+		ApiClient client = new ApiClient();
+		client.setBasePath("http://[ml-server-IP]:[ml-server-PORT]");
+		client.setApiKey("Bearer " + bearerToken);
+		
+		return client;
+	}
+	
+	private InputParameters GetRedmondLocation()
+	{
+		InputParameters location = new InputParameters();
+		location.setLatitude(new BigDecimal(47.6740));
+		location.setLongitude(new BigDecimal(-122.1215));
+		return location;
+	}
+
+}
