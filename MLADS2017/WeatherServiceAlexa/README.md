@@ -8,5 +8,9 @@ Follow below steps to get started with the project:
 4. Save changes, right click on project and select 'Run as Maven Install'
 5. Maven install command will generate the complete JAR for you under 'target' folder, that you can use with your AWS Lambda and Alexa skills.
 
-For more details, refer to the blog:
-https://blogs.msdn.microsoft.com/mlserver/2017/10/09/amazons-aws-lamba-and-alexa-skill-with-microsoft-machine-learning-server-operationalization/
+For more details, refer to this blog: [Amazon’s AWS Lambda and Alexa Skill with Microsoft Machine Learning Server Operationalization](https://blogs.msdn.microsoft.com/mlserver/2017/10/09/amazons-aws-lamba-and-alexa-skill-with-microsoft-machine-learning-server-operationalization/)
+
+
+
+## Architecture
+![Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/MLADS2017/WeatherServiceAlexa/alexa-aws-lambda-mls-flow.png)
