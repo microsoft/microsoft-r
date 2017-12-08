@@ -10,8 +10,12 @@
 ## Azure Functions Integration with Microsoft Machine Learning Server
 ![Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/MLADS2017/WeatherServiceAzureFunction/mls-azure-function.png)
 
+
+
 ## Architecture of WeatherService SMS application using Twilio
 ![Architecture](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/MLADS2017/WeatherServiceAzureFunction/mls-weather-service.png)
+
+
 
 ## Sample SMS Notification
 ![Notification](https://raw.githubusercontent.com/Microsoft/microsoft-r/master/MLADS2017/WeatherServiceAzureFunction/temperature-notification.jpg)
