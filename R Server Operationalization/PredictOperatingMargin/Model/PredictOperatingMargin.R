@@ -40,15 +40,8 @@ remoteLogin("http://[RSERVER IP]:12800", session = TRUE, diff = TRUE, commandlin
             prompt = "REMOTE_TECHREADY>>>", username = "", password = "")
 pause()
 
-# Show API capabilities
-api$capabilities()
-
-#Consume the service
-results <- api$CheckOperatingMargin(3400, 2, 50000, 75)
-results$output("margin")
-service_name <- "CheckLocationViabilityForHotel"
-
 # Publish service
+service_name <- "CheckLocationViabilityForHotel"
 api <- publishService(
   service_name,
   code = CheckOperatingMargin,
@@ -56,6 +49,13 @@ api <- publishService(
   inputs = list(TotalRooms = 'numeric', NearestCompetition = 'numeric', AnnualVisitors = 'numeric', MedianIncome = 'numeric'),
   outputs = list(margin = 'numeric'),
   v = 'v1.0.0')
+
+# Show API capabilities
+api$capabilities()
+
+#Consume the service
+results <- api$CheckOperatingMargin(3400, 2, 50000, 75)
+results$output("margin")
 
 #List all services
 services <- listServices()
