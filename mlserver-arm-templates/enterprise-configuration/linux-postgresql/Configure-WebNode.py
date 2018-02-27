@@ -25,10 +25,13 @@ json.dump(data, f, indent=2, sort_keys=False)
 f.close()
 
 data = json.loads(open(webNodeAppSettingsFilePath, "r").read().decode("utf-8-sig").encode("utf-8").replace("\r\n",""), object_pairs_hook=OrderedDict)
+data["Logging"]["LogLevel"]["Default"] = "Information"
+data["Logging"]["LogLevel"]["System"] = "Information"
+data["Logging"]["LogLevel"]["Microsoft"] = "Information"
 data["ConnectionStrings"]["postgresql"]["Enabled"] = True
 data["ConnectionStrings"]["postgresql"]["Connection"] = postgresqlConnectionString
 data["ConnectionStrings"]["defaultDb"]["Enabled"] = False
-data["BackEndConfiguration"]["Uris"]["Ranges"] =  ["http://10.0.1.0-255:12805"]
+data["ComputeNodesConfiguration"]["Uris"]["Ranges"] =  ["http://10.0.1.0-255:12805"]
 data["Authentication"]["JWTSigningCertificate"]["Enabled"] = True
 data["Authentication"]["JWTSigningCertificate"]["StoreName"] = "Root"
 data["Authentication"]["JWTSigningCertificate"]["StoreLocation"] = "CurrentUser"
