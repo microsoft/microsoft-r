@@ -25,7 +25,7 @@
 
 Once you have deployed the One-Box in Azure, you can connect to it using remoteLogin() function in [mrsdeploy](https://msdn.microsoft.com/en-us/microsoft-r/mrsdeploy/mrsdeploy) package : 
 
-**NOTE : adminPassword must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s).**
+**NOTE : adminPassword must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s) from ~!@#$%^&()-_+=|<.>\/;:,**
 
 ```R
 remoteLogin("http://<dnsLabelPrefix>.<region>.cloudapp.azure.com:12800",
