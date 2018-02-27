@@ -17,8 +17,8 @@ os.makedirs(certLocation)
 os.system("cp " + certFileName + " " + certLocation)
 os.system("chmod 777 " + certLocation + "/" + certFileName)
 
-computeNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.ComputeNode/appsettings.json"
-webNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.WebNode/appsettings.json"
+computeNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.3.0/o16n/Microsoft.MLServer.ComputeNode/appsettings.json"
+webNodeAppSettingsFilePath = "/opt/microsoft/mlserver/9.3.0/o16n/Microsoft.MLServer.WebNode/appsettings.json"
 
 data = json.loads(open(computeNodeAppSettingsFilePath, "r").read().decode("utf-8-sig").encode("utf-8").replace("\r\n",""), object_pairs_hook=OrderedDict)
 data["configured"] = "configured"
@@ -45,7 +45,7 @@ f = open(webNodeAppSettingsFilePath, "w")
 json.dump(data, f, indent=2, sort_keys=False)
 f.close()
 
-os.system("/usr/local/bin/dotnet /opt/microsoft/mlserver/9.2.1/o16n/Microsoft.MLServer.Utils.AdminUtil/Microsoft.MLServer.Utils.AdminUtil.dll -silentwebnodeinstall \"" + password + "\"")
+os.system("az ml admin node setup --webnode --admin-password \"" + password + "\" --confirm-password \"" + password + "\"")
 os.system("service webnode stop")
 time.sleep(120)
 os.system("service webnode start")

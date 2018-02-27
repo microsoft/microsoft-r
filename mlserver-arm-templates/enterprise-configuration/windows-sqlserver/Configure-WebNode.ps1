@@ -50,7 +50,13 @@ if($aadTenant -ne "") {
 
 $appSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\appsettings.json"
 
-Start-Process "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\dotnet\dotnet.exe" -Wait -ArgumentList """C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.Utils.AdminUtil\Microsoft.MLServer.Utils.AdminUtil.dll"" -silentWebNodeInstall ""$password""" -WorkingDirectory "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n" -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+$psi = New-Object System.Diagnostics.ProcessStartInfo;
+$psi.FileName = "C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin\az.cmd";
+$psi.Arguments = "ml admin node setup --webnode --admin-password ""$password"" --confirm-password ""$password""";
+$psi.WorkingDirectory = "C:\Program Files\Microsoft\ML Server";
+$psi.UseShellExecute = $false
+$p = [System.Diagnostics.Process]::Start($psi);
+$p.WaitForExit();
 
 taskkill /f /im dotnet.exe
 Disable-ScheduledTask -TaskName "autostartwebnode"
