@@ -7,7 +7,7 @@ import time
 from collections import OrderedDict
 
 password=sys.argv[1]
-postgresqlConnectionString=sys.argv[4]
+postgresqlConnectionString=sys.argv[2]
 
 certLocation = "/home/webnode_usr/.dotnet/corefx/cryptography/x509stores/root"
 certFileName = "25706AA4612FC42476B8E6C72A97F58D4BB5721B.pfx"
