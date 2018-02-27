@@ -36,11 +36,6 @@ data["Authentication"]["JWTSigningCertificate"]["StoreName"] = "Root"
 data["Authentication"]["JWTSigningCertificate"]["StoreLocation"] = "CurrentUser"
 data["Authentication"]["JWTSigningCertificate"]["SubjectName"] = "CN=LOCALHOST"
 
-if aadTenant != "":
-    data["Authentication"]["AzureActiveDirectory"]["Authority"] = "https://login.windows.net/" + aadTenant
-    data["Authentication"]["AzureActiveDirectory"]["Audience"] = aadClientId
-    data["Authentication"]["AzureActiveDirectory"]["Enabled"] = True
-
 f = open(webNodeAppSettingsFilePath, "w")
 json.dump(data, f, indent=2, sort_keys=False)
 f.close()

@@ -136,20 +136,6 @@
       "metadata": {
         "description": "Admin password on all VMs. Must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s)"
       }
-    },
-    "aadTenant": {
-      "type": "string",
-      "metadata": {
-        "description": "Azure ActiveDirectory tenant."
-      },
-      "defaultValue": ""
-    },
-    "aadClientId": {
-      "type": "string",
-      "metadata": {
-        "description": "Azure ActiveDirectory client id for the web application."
-      },
-      "defaultValue": ""
     }
   },
   "variables": {
@@ -344,7 +330,7 @@
                   "typeHandlerVersion": "1.8",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -password \"', parameters('adminPassword'), '\" -aadTenant \"', parameters('aadTenant'), '\" -aadClientId \"', parameters('aadClientId'), '\" -sqlServerConnectionString \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=''', parameters('adminPassword'), ''';'), '\"')]"
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./Configure-WebNode.ps1 -password \"', parameters('adminPassword'), '\" -sqlServerConnectionString \"', concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('adminUsername'), '@', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ';Password=', parameters('adminPassword'), ';'), '\"')]"
                   },
                   "type": "CustomScriptExtension"
                 }
