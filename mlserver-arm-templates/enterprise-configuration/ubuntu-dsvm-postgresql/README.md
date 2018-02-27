@@ -57,19 +57,9 @@ To connect to your Linux virtual machine, you can SSH into its Public IP address
 ssh <adminUsername>@<dnsLabelPrefix>.<region>.cloudapp.azure.com -p 50000
 ```
 
-## Python
+## Python QuickStarts
 
-To run the python installation, you will need to run mlserver’s python like this :
-
-```
-mlserver-python
-```
-
-And you can import the azureml-model-management-sdk, for instance:
-
-import azureml.deploy
-
-## Python Notebooks Sample
+https://blogs.msdn.microsoft.com/mlserver/2017/12/13/getting-started-with-python-web-services-using-machine-learning-server/
 
 https://docs.microsoft.com/en-us/machine-learning-server/operationalize/python/quickstart-deploy-python-web-service
 
