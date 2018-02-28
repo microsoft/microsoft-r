@@ -1,8 +1,6 @@
 param (
 	[string]$password,
-    [string]$sqlServerConnectionString,
-    [string]$aadTenant,
-    [string]$aadClientId
+    [string]$sqlServerConnectionString
 )
 
 function AllowRead-Certificate
@@ -35,22 +33,31 @@ $computeNodeAppSettingsJson | add-member -Name "configured" -value "configured" 
 $computeNodeAppSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.ComputeNode\appsettings.json"
 
 $appSettingsJson = Get-Content -Encoding UTF8 -Raw "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\appsettings.json" | ConvertFrom-Json
+$appSettingsJson.Logging.LogLevel.Default = "Information"
+$appSettingsJson.Logging.LogLevel.System = "Information"
+$appSettingsJson.Logging.LogLevel.Microsoft = "Information"
 $appSettingsJson.ConnectionStrings.sqlserver.Enabled = $True
 $appSettingsJson.ConnectionStrings.sqlserver.Connection = $sqlServerConnectionString
 $appSettingsJson.ConnectionStrings.defaultDb.Enabled = $False
 $appSettingsJson.Authentication.JWTSigningCertificate.Enabled = $True
 $appSettingsJson.Authentication.JWTSigningCertificate.SubjectName = "DC=Windows Azure CRP Certificate Generator"
-$appSettingsJson.BackEndConfiguration.Uris | add-member -Name "Ranges" -value @("http://10.0.1.1-255:12805") -MemberType NoteProperty
-
-if($aadTenant -ne "") {
-    $appSettingsJson.Authentication.AzureActiveDirectory.Authority = "https://login.windows.net/" + $aadTenant
-    $appSettingsJson.Authentication.AzureActiveDirectory.Audience = $aadClientId
-    $appSettingsJson.Authentication.AzureActiveDirectory.Enabled = $True
-}
+$appSettingsJson.ComputeNodesConfiguration.Uris.Ranges = @("http://10.0.1.1-255:12805")
 
 $appSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\appsettings.json"
 
-Start-Process "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\dotnet\dotnet.exe" -Wait -ArgumentList """C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.Utils.AdminUtil\Microsoft.MLServer.Utils.AdminUtil.dll"" -silentWebNodeInstall ""$password""" -WorkingDirectory "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n" -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+$psi = New-Object System.Diagnostics.ProcessStartInfo;
+$psi.FileName = "C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin\az.cmd";
+$psi.Arguments = "ml admin node setup --webnode --admin-password ""$password"" --confirm-password ""$password""";
+$psi.WorkingDirectory = "C:\Program Files\Microsoft\ML Server";
+$psi.UseShellExecute = $false
+$psi.RedirectStandardOutput = $true
+$psi.RedirectStandardError = $true
+$p = [System.Diagnostics.Process]::Start($psi);
+$poutput = $p.StandardOutput.ReadToEnd();
+$perror = $p.StandardError.ReadToEnd();
+$p.WaitForExit();
+Write-Output $poutput
+Write-Output $perror
 
 taskkill /f /im dotnet.exe
 Disable-ScheduledTask -TaskName "autostartwebnode"

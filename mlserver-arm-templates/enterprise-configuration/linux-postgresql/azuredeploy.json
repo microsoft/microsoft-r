@@ -144,20 +144,6 @@
       "metadata": {
         "description": "Admin password on all VMs. Must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s)"
       }
-    },
-    "aadTenant": {
-      "type": "string",
-      "metadata": {
-        "description": "Azure ActiveDirectory tenant."
-      },
-      "defaultValue": ""
-    },
-    "aadClientId": {
-      "type": "string",
-      "metadata": {
-        "description": "Azure ActiveDirectory client id for the web application."
-      },
-      "defaultValue": ""
     }
   },
   "variables": {
@@ -373,14 +359,14 @@
                   "publisher": "Microsoft.OSTCExtensions",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-WebNode.py')]",
+                      "[concat(variables('scriptsUri'), 'ConfigureWebNode.py')]",
                       "[concat(variables('scriptsUri'), '25706AA4612FC42476B8E6C72A97F58D4BB5721B.pfx')]"
                     ]
                   },
                   "typeHandlerVersion": "1.4",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('python Configure-WebNode.py \"', parameters('adminPassword'), '\" \"', parameters('aadTenant'), '\" \"', parameters('aadClientId'), '\" \"', concat('User ID=', parameters('adminUsername'), '@', variables('postgresqlName'), ';Password=', parameters('adminPassword'),';Server=', variables('postgresqlName'), '.postgres.database.azure.com;Port=5432;Database=', variables('databaseName'), ';Pooling=true;MinPoolSize=0;MaxPoolSize=250;SSL Mode=Prefer; Trust Server Certificate=true', '\"'))]"
+                    "commandToExecute": "[concat('python ConfigureWebNode.py \"', parameters('adminPassword'), '\" \"', concat('User ID=', parameters('adminUsername'), '@', variables('postgresqlName'), ';Password=', parameters('adminPassword'),';Server=', variables('postgresqlName'), '.postgres.database.azure.com;Port=5432;Database=', variables('databaseName'), ';Pooling=true;MinPoolSize=0;MaxPoolSize=250;SSL Mode=Prefer; Trust Server Certificate=true', '\"'))]"
                   },
                   "type": "CustomScriptForLinux"
                 }
@@ -526,13 +512,13 @@
                   "publisher": "Microsoft.OSTCExtensions",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.py')]"                      
+                      "[concat(variables('scriptsUri'), 'ConfigureComputeNode.py')]"                      
                     ]
                   },
                   "typeHandlerVersion": "1.4",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('python Configure-ComputeNode.py \"', parameters('poolInitialSize'), '\" \"', parameters('poolMaxSize'), '\"')]"
+                    "commandToExecute": "[concat('python ConfigureComputeNode.py \"', parameters('poolInitialSize'), '\" \"', parameters('poolMaxSize'), '\"')]"
                   },
                   "type": "CustomScriptForLinux"
                 }
