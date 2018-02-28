@@ -267,10 +267,10 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(variables('scriptsUri'), 'ConfigureOneBox.ps1')]",
-                "[concat(variables('scriptsUri'), 'RunConfigureOneBox.ps1')]"
+                "[concat(variables('scriptsUri'), 'ConfigureOnebox.ps1')]",
+                "[concat(variables('scriptsUri'), 'RunConfigureOnebox.ps1')]"
               ],
-              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./RunConfigureOneBox.ps1 -script \"ConfigureOnebox.ps1\" -username \"', parameters('adminUserName'), '\" -password \"', parameters('adminPassword'), '\"')]"
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./RunConfigureOnebox.ps1 -script \"ConfigureOnebox.ps1\" -username \"', parameters('adminUserName'), '\" -password \"', parameters('adminPassword'), '\"')]"
             }
           }
         }
