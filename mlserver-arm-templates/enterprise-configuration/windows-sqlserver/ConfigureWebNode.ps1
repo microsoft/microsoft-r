@@ -41,7 +41,7 @@ $appSettingsJson.ConnectionStrings.sqlserver.Connection = $sqlServerConnectionSt
 $appSettingsJson.ConnectionStrings.defaultDb.Enabled = $False
 $appSettingsJson.Authentication.JWTSigningCertificate.Enabled = $True
 $appSettingsJson.Authentication.JWTSigningCertificate.SubjectName = "DC=Windows Azure CRP Certificate Generator"
-$appSettingsJson.ComputeNodesConfiguration.Uris | add-member -Name "Ranges" -value @("http://10.0.1.1-255:12805") -MemberType NoteProperty
+$appSettingsJson.ComputeNodesConfiguration.Uris.Ranges = @("http://10.0.1.1-255:12805")
 
 $appSettingsJson | ConvertTo-Json -Depth 100 | Set-Content -Encoding UTF8 "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\appsettings.json"
 
