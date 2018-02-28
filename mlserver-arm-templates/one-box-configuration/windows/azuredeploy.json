@@ -74,9 +74,7 @@
     "virtualNetworkName": "[concat(parameters('dnsLabelPrefix'), 'VNET')]",
     "networkSecurityGroupName": "[concat(parameters('dnsLabelPrefix'), 'NSG')]",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
-    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]",
-    "scriptFileName": "Configure-Onebox.ps1",
-    "scriptParameters": "[concat(' -password \"', parameters('adminPassword'), '\"')]"
+    "scriptsUri": "[uri(deployment().properties.templateLink.uri, '.')]"
   },
   "resources": [
     {
@@ -269,9 +267,10 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(variables('scriptsUri'), variables('scriptFileName'))]"
+                "[concat(variables('scriptsUri'), 'ConfigureOneBox.ps1')]",
+                "[concat(variables('scriptsUri'), 'RunConfigureOneBox.ps1')]"
               ],
-              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', './', variables('scriptFileName'), ' ', variables('scriptParameters'))]"
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./RunConfigureOneBox.ps1 -script \"ConfigureOnebox.ps1\" -username \"', parameters('adminUserName'), '\" -password \"', parameters('adminPassword'), '\"')]"
             }
           }
         }

@@ -275,11 +275,11 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(variables('scriptsUri'), 'Configure-OneBox.sh')]"
+                "[concat(variables('scriptsUri'), 'ConfigureOneBox.sh')]"
               ]             
             },
             "protectedSettings": {
-               "commandToExecute": "[concat('bash Configure-OneBox.sh \"', parameters('adminPassword'), '\"')]"
+               "commandToExecute": "[concat('bash ConfigureOneBox.sh \"', parameters('adminPassword'), '\"')]"
             }
           }
         }

@@ -359,14 +359,14 @@
                   "publisher": "Microsoft.OSTCExtensions",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-WebNode.py')]",
+                      "[concat(variables('scriptsUri'), 'ConfigureWebNode.py')]",
                       "[concat(variables('scriptsUri'), '25706AA4612FC42476B8E6C72A97F58D4BB5721B.pfx')]"
                     ]
                   },
                   "typeHandlerVersion": "1.4",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('python Configure-WebNode.py \"', parameters('adminPassword'), '\" \"', concat('User ID=', parameters('adminUsername'), '@', variables('postgresqlName'), ';Password=', parameters('adminPassword'),';Server=', variables('postgresqlName'), '.postgres.database.azure.com;Port=5432;Database=', variables('databaseName'), ';Pooling=true;MinPoolSize=0;MaxPoolSize=250;SSL Mode=Prefer; Trust Server Certificate=true', '\"'))]"
+                    "commandToExecute": "[concat('python ConfigureWebNode.py \"', parameters('adminPassword'), '\" \"', concat('User ID=', parameters('adminUsername'), '@', variables('postgresqlName'), ';Password=', parameters('adminPassword'),';Server=', variables('postgresqlName'), '.postgres.database.azure.com;Port=5432;Database=', variables('databaseName'), ';Pooling=true;MinPoolSize=0;MaxPoolSize=250;SSL Mode=Prefer; Trust Server Certificate=true', '\"'))]"
                   },
                   "type": "CustomScriptForLinux"
                 }
@@ -512,13 +512,13 @@
                   "publisher": "Microsoft.OSTCExtensions",
                   "settings": {
                     "fileUris": [
-                      "[concat(variables('scriptsUri'), 'Configure-ComputeNode.py')]"                      
+                      "[concat(variables('scriptsUri'), 'ConfigureComputeNode.py')]"                      
                     ]
                   },
                   "typeHandlerVersion": "1.4",
                   "autoUpgradeMinorVersion": true,
                   "protectedSettings": {
-                    "commandToExecute": "[concat('python Configure-ComputeNode.py \"', parameters('poolInitialSize'), '\" \"', parameters('poolMaxSize'), '\"')]"
+                    "commandToExecute": "[concat('python ConfigureComputeNode.py \"', parameters('poolInitialSize'), '\" \"', parameters('poolMaxSize'), '\"')]"
                   },
                   "type": "CustomScriptForLinux"
                 }
