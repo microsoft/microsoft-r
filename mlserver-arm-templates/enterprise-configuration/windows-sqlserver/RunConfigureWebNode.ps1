@@ -7,7 +7,7 @@ param (
 
 $securepassword =  ConvertTo-SecureString "$password" -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential("$env:COMPUTERNAME\$username", $securepassword)
-Enable-PSRemoting –Force
+Enable-PSRemoting -Force
 Invoke-Command -FilePath $script -Credential $credential -ComputerName $env:COMPUTERNAME -ArgumentList $password,$sqlServerConnectionString
 Disable-PSRemoting -Force -WarningAction SilentlyContinue
 winrm delete winrm/config/listener?address=*+transport=HTTP
