@@ -1,0 +1,153 @@
+{
+  "handler": "Microsoft.Compute.MultiVm",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "vmName",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Name",
+        "toolTip": "The name of the virtual machine.",
+        "constraints": {
+          "required": true,
+          "regex": "^[a-zA-Z][a-zA-Z0-9-]{2,13}[a-zA-Z0-9]$",
+          "validationMessage": "VM names must be between 3 and 15 characters long, and can contain only numbers, letters, and hyphens."
+        }
+      },
+      {
+        "name": "osType",
+        "type": "Microsoft.Common.DropDown",
+        "label": "Select OS type for the ML Server VM",
+        "defaultValue": "Windows",
+        "toolTip": "ML Server VM is available in four flavors - Windows Server 2016, CentOS based Linux, RedHat based Linux, Ubuntu based Linux",
+        "constraints": {
+          "allowedValues": [
+            {
+              "label": "Windows",
+              "value": "WS2016"
+            },
+            {
+              "label": "CentOS",
+              "value": "CentOS"
+            },
+            {
+              "label": "RedHat",
+              "value": "RedHat"
+            },
+            {
+              "label": "Ubuntu",
+              "value": "Ubuntu"
+            }
+          ]
+        },
+        "visible": true
+      },
+      {
+        "name": "adminUsername",
+        "type": "Microsoft.Compute.UserNameTextBox",
+        "label": "User name",
+        "toolTip": "Admin username for the virtual machines.",
+        "osPlatform": "Windows"
+      },
+      {
+        "name": "adminPassword",
+        "type": "Microsoft.Compute.CredentialsCombo",
+        "label": {
+          "password": "Password",
+          "confirmPassword": "Confirm password"
+        },
+        "toolTip": {
+          "password": "Admin password for the virtual machines."
+        },
+        "osPlatform": "Windows"
+      },
+      {
+        "name": "oneboxPassword",
+        "type": "Microsoft.Compute.CredentialsCombo",
+        "label": {
+          "password": "One-box Password",
+          "confirmPassword": "Confirm One-box Password"
+        },
+        "toolTip": {
+          "password": "Local administrator password for Machine Learning Server One-box Configuration"
+        },
+        "constraints": {
+          "required": true,
+          "customPasswordRegex": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[~!@#$%^()-_+=|\/;:,.&<>;]).{8,16}$",
+          "customValidationMessage": "One-box Password must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s) from ~!@#$%^()-_+=|\/;:,.&<>"
+        },
+        "options": {
+          "hideConfirmation": true
+        },
+        "osPlatform": "Windows",
+        "visible": true
+      }
+    ],
+    "steps": [
+      {
+        "name": "infrastructureConfig",
+        "label": "Settings",
+        "subLabel": {
+          "preValidation": "Configure additional settings",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Settings",
+        "elements": [
+          {
+            "name": "vmSize",
+            "type": "Microsoft.Compute.SizeSelector",
+            "label": "Virtual machine size",
+            "toolTip": "Select the size of the machine",
+            "recommendedSizes": [
+              "Standard_DS11_v2",
+              "Standard_DS12_v2",
+              "Standard_DS13_v2",
+              "Standard_DS14_v2"
+            ],
+            "constraints": {
+              "required": true,
+              "allowedSizes": []
+            },
+            "osPlatform": "Windows",
+            "imageReference": {
+              "publisher": "MicrosoftRServer",
+              "offer": "MLServer-WS2016",
+              "sku": "Enterprise",
+              "version": "latest"
+            }
+          },
+          {
+            "name": "storageAccount",
+            "type": "Microsoft.Storage.StorageAccountSelector",
+            "label": "Storage account",
+            "defaultValue": {
+              "name": "[concat(substring(guid(), 24, 12), 'o16n')]",
+              "type": "Standard_LRS"
+            },
+            "constraints": {
+              "allowedTypes": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS"
+              ]
+            },
+            "options": {
+              "hideExisting": true
+            }
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[location()]",
+      "osType": "[basics('osType')]",
+      "adminUsername": "[basics('adminUsername')]",
+      "adminPassword": "[basics('adminPassword').password]",
+      "oneboxPassword": "[basics('oneboxPassword').password]",
+      "vmSize": "[steps('infrastructureConfig').vmSize]",
+      "vmName": "[basics('vmName')]",
+      "storageAccountName": "[steps('infrastructureConfig').storageAccount.name]",
+      "storageAccountType": "[steps('infrastructureConfig').storageAccount.type]"
+    }
+  }
+}

@@ -1,0 +1,274 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"adminUsername": {
+			"type": "string",
+			"metadata": {
+				"description": "Username for the Virtual Machine."
+			}
+		},
+		"adminPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "Password for the Virtual Machine"
+			}
+		},
+		"vmName": {
+			"type": "string",
+			"metadata": {
+				"description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+			}
+		},
+		"vmSize": {
+			"type": "string",
+			"defaultValue": "Standard_DS13_v2",
+			"metadata": {
+				"description": "Size of VM"
+			}
+		},
+		"oneboxPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "Password for Operationalization. Must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s)"
+			}
+		},
+		"storageAccountName": {
+			"type": "string",
+			"metadata": {
+				"description": "Name of storage account"
+			}
+		},
+		"storageAccountType": {
+			"type": "string",
+			"metadata": {
+				"description": "The type of the Storage Account created"
+			},
+			"defaultValue": "Standard_LRS"
+		},
+		"baseUrl": {
+			"type": "string",
+			"metadata": {
+				"description": "The base URL for scripts"
+			}
+		},
+		"location": {
+			"type": "string",
+			"metadata": {
+				"description": "The region to deploy the resources into"
+			}
+		}
+	},
+	"variables": {
+		"nicName": "[concat(parameters('vmName'), 'VMNic')]",
+		"addressPrefix": "10.0.0.0/16",
+		"subnetName": "Subnet",
+		"subnetPrefix": "10.0.0.0/24",
+		"publicIPAddressName": "[concat(parameters('vmName'), 'PublicIP')]",
+		"vmName": "[parameters('vmName')]",
+		"virtualNetworkName": "[concat(parameters('vmName'), 'VNET')]",
+		"networkSecurityGroupName": "[concat(parameters('vmName'), 'NSG')]",
+		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[parameters('storageAccountName')]",
+			"apiVersion": "[providers('Microsoft.Storage','storageAccounts').apiVersions[0]]",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "[parameters('storageAccountType')]"
+			},
+			"kind": "Storage",
+			"properties": {}
+		},
+		{
+			"apiVersion": "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]",
+			"type": "Microsoft.Network/publicIPAddresses",
+			"name": "[variables('publicIPAddressName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIPAllocationMethod": "Dynamic",
+				"idleTimeoutInMinutes": 30,
+				"dnsSettings": {
+					"domainNameLabel": "[parameters('vmName')]"
+				}
+			}
+		},
+		{
+			"apiVersion": "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]",
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"name": "[variables('networkSecurityGroupName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules": [
+					{
+						"name": "Remote",
+						"properties": {
+							"description": "Allows Remote Desktop",
+							"protocol": "Tcp",
+							"sourcePortRange": "*",
+							"destinationPortRange": "3389",
+							"sourceAddressPrefix": "*",
+							"destinationAddressPrefix": "*",
+							"access": "Allow",
+							"priority": 101,
+							"direction": "Inbound"
+						}
+					},
+					{
+						"name": "WebNode",
+						"properties": {
+							"description": "Allows WebNode traffic",
+							"protocol": "Tcp",
+							"sourcePortRange": "*",
+							"destinationPortRange": "12800",
+							"sourceAddressPrefix": "*",
+							"destinationAddressPrefix": "*",
+							"access": "Allow",
+							"priority": 102,
+							"direction": "Inbound"
+						}
+					}
+				]
+			}
+		},
+		{
+			"apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
+			"type": "Microsoft.Network/virtualNetworks",
+			"name": "[variables('virtualNetworkName')]",
+			"dependsOn": [
+				"[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+			],
+			"location": "[parameters('location')]",
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[variables('addressPrefix')]"
+					]
+				},
+				"subnets": [
+					{
+						"name": "[variables('subnetName')]",
+						"properties": {
+							"addressPrefix": "[variables('subnetPrefix')]",
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"apiVersion": "[providers('Microsoft.Network','networkInterfaces').apiVersions[0]]",
+			"type": "Microsoft.Network/networkInterfaces",
+			"name": "[variables('nicName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+				"[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"apiVersion": "[providers('Microsoft.Compute','virtualMachines').apiVersions[0]]",
+			"type": "Microsoft.Compute/virtualMachines",
+			"name": "[variables('vmName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+				"[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[variables('vmName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "MicrosoftRServer",
+						"offer": "MLServer-WS2016",
+						"sku": "Enterprise",
+						"version": "latest"
+					},
+					"osDisk": {
+						"name": "osdisk",
+						"vhd": {
+							"uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))).primaryEndpoints.blob, 'vhds/osdisk.vhd')]"
+						},
+						"caching": "ReadWrite",
+						"createOption": "FromImage"
+					},
+					"dataDisks": [
+						{
+							"name": "datadisk1",
+							"diskSizeGB": "100",
+							"lun": 0,
+							"vhd": {
+								"uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))).primaryEndpoints.blob, 'vhds/datadisk1.vhd')]"
+							},
+							"createOption": "Empty"
+						}
+					]
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": "true",
+						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))).primaryEndpoints.blob]"
+					}
+				}
+			},
+			"resources": [
+				{
+					"type": "extensions",
+					"name": "CustomScriptExtension",
+					"apiVersion": "[providers('Microsoft.Compute','virtualMachines/extensions').apiVersions[0]]",
+					"location": "[parameters('location')]",
+					"dependsOn": [
+						"[resourceId('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+					],
+					"properties": {
+						"publisher": "Microsoft.Compute",
+						"type": "CustomScriptExtension",
+						"typeHandlerVersion": "1.8",
+						"autoUpgradeMinorVersion": true,
+						"settings": {
+							"fileUris": [
+								"[concat(parameters('baseUrl'), 'ConfigureOnebox.ps1')]",
+								"[concat(parameters('baseUrl'), 'RunConfigureOnebox.ps1')]"
+							],
+							"commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ./RunConfigureOnebox.ps1 -script \"ConfigureOnebox.ps1\" -username \"', parameters('adminUserName'), '\" -password \"', parameters('adminPassword'), '\" -oneboxpassword \"', parameters('oneboxPassword'), '\"')]"
+						}
+					}
+				}
+			]
+		}
+	]
+}
