@@ -71,13 +71,6 @@
                 "description": "The type of the Storage Account created"
             },
             "defaultValue": "Standard_LRS"
-        },
-        "pfxBlobString" :{
-            "type": "string",
-            "metadata": {
-                "description": "A pfx file encoded as a base-64 string. This PFX certificate will be used as API certificate for Operationalization."
-            },
-            "defaultValue": ""
         }
     },
     "variables": {
@@ -106,10 +99,10 @@
         "typeHandlerVersionCentOS": "1.4",
         "typeHandlerVersionRedHat": "1.4",
         "typeHandlerVersionUbuntu": "1.4",
-        "commandToExecuteWS2016": "[concat('powershell -ExecutionPolicy Unrestricted -File ./RunConfigureOnebox.ps1 -script \"ConfigureOnebox.ps1\" -username \"', parameters('adminUserName'), '\" -password \"', parameters('adminPassword'), '\" -oneboxpassword \"', parameters('oneboxPassword'), '\" \"', parameters('pfxBlobString'), '\"')]",
-        "commandToExecuteCentOS": "[concat('python ConfigureOnebox.py \"', parameters('oneboxPassword'), '\" \"', parameters('pfxBlobString'), '\"')]",
-        "commandToExecuteRedHat": "[concat('python ConfigureOnebox.py \"', parameters('oneboxPassword'), '\" \"', parameters('pfxBlobString'), '\"')]",
-        "commandToExecuteUbuntu": "[concat('python ConfigureOnebox.py \"', parameters('oneboxPassword'), '\" \"', parameters('pfxBlobString'), '\"')]"
+        "commandToExecuteWS2016": "[concat('powershell -ExecutionPolicy Unrestricted -File ./RunConfigureOnebox.ps1 -script \"ConfigureOnebox.ps1\" -username \"', parameters('adminUserName'), '\" -password \"', parameters('adminPassword'), '\" -oneboxpassword \"', parameters('oneboxPassword'), '\"')]",
+        "commandToExecuteCentOS": "[concat('bash ConfigureOnebox.sh \"', parameters('oneboxPassword'), '\"')]",
+        "commandToExecuteRedHat": "[concat('bash ConfigureOnebox.sh \"', parameters('oneboxPassword'), '\"')]",
+        "commandToExecuteUbuntu": "[concat('bash ConfigureOnebox.sh \"', parameters('oneboxPassword'), '\"')]"
     },
     "resources": [
         {
@@ -304,7 +297,7 @@
                             "fileUris": [
                                 "[concat(parameters('baseUrl'), '/ConfigureOnebox.ps1')]",
                                 "[concat(parameters('baseUrl'), '/RunConfigureOnebox.ps1')]",
-                                "[concat(parameters('baseUrl'), '/ConfigureOnebox.py')]"
+                                "[concat(parameters('baseUrl'), '/ConfigureOnebox.sh')]"
                             ]
                         },
                         "protectedSettings": {
