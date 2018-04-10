@@ -2,6 +2,14 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "baseUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "Base URL for Artifacts",
+                "artifactsBaseUrl": ""
+            },
+            "defaultValue": "https://raw.githubusercontent.com/Microsoft/microsoft-r/master/azuremarketplace/onebox"
+        },
         "osType": {
             "type": "string",
             "metadata": {
@@ -40,7 +48,7 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_NC6",
+            "defaultValue": "Standard_DS13_v2",
             "metadata": {
                 "description": "Size for the Virtual Machine."
             }
@@ -63,56 +71,254 @@
                 "description": "The type of the Storage Account created"
             },
             "defaultValue": "Standard_LRS"
+        },
+        "pfxBlobString" :{
+            "type": "string",
+            "metadata": {
+                "description": "A pfx file encoded as a base-64 string. This PFX certificate will be used as API certificate for Operationalization."
+            },
+            "defaultValue": ""
         }
     },
-    "variables": {},
+    "variables": {
+        "nicName": "[concat(parameters('vmName'), 'VMNic')]",
+        "addressPrefix": "10.0.0.0/16",
+        "subnetName": "Subnet",
+        "subnetPrefix": "10.0.0.0/24",
+        "publicIPAddressName": "[concat(parameters('vmName'), 'PublicIP')]",
+        "vmName": "[parameters('vmName')]",
+        "virtualNetworkName": "[concat(parameters('vmName'), 'VNET')]",
+        "networkSecurityGroupName": "[concat(parameters('vmName'), 'NSG')]",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+        "sshPortWS2016": "3389",
+        "sshPortCentOS": "22",
+        "sshPortRedHat": "22",
+        "sshPortUbuntu": "22",
+        "publisherWS2016": "Microsoft.Compute",
+        "publisherCentOS": "Microsoft.OSTCExtensions",
+        "publisherRedHat": "Microsoft.OSTCExtensions",
+        "publisherUbuntu": "Microsoft.OSTCExtensions",
+        "typeWS2016": "CustomScriptExtension",
+        "typeCentOS": "CustomScriptForLinux",
+        "typeRedHat": "CustomScriptForLinux",
+        "typeUbuntu": "CustomScriptForLinux",
+        "typeHandlerVersionWS2016": "1.8",
+        "typeHandlerVersionCentOS": "1.4",
+        "typeHandlerVersionRedHat": "1.4",
+        "typeHandlerVersionUbuntu": "1.4",
+        "commandToExecuteWS2016": "[concat('powershell -ExecutionPolicy Unrestricted -File ./RunConfigureOnebox.ps1 -script \"ConfigureOnebox.ps1\" -username \"', parameters('adminUserName'), '\" -password \"', parameters('adminPassword'), '\" -oneboxpassword \"', parameters('oneboxPassword'), '\" \"', parameters('pfxBlobString'), '\"')]",
+        "commandToExecuteCentOS": "[concat('python ConfigureOnebox.py \"', parameters('oneboxPassword'), '\" \"', parameters('pfxBlobString'), '\"')]",
+        "commandToExecuteRedHat": "[concat('python ConfigureOnebox.py \"', parameters('oneboxPassword'), '\" \"', parameters('pfxBlobString'), '\"')]",
+        "commandToExecuteUbuntu": "[concat('python ConfigureOnebox.py \"', parameters('oneboxPassword'), '\" \"', parameters('pfxBlobString'), '\"')]"
+    },
     "resources": [
         {
-            "apiVersion": "[providers('Microsoft.Resources','deployments').apiVersions[0]]",
-            "name": "linkedTemplate",
-            "type": "Microsoft.Resources/deployments",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageAccountName')]",
+            "apiVersion": "2017-10-01",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "Storage",
+            "properties": {}
+        },
+        {
+            "apiVersion": "2018-01-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddressName')]",
+            "location": "[parameters('location')]",
             "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat('https://raw.githubusercontent.com/Microsoft/microsoft-r/master/azuremarketplace/onebox/',parameters('osType'), '.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "baseUrl": {
-                        "value": "https://raw.githubusercontent.com/Microsoft/microsoft-r/master/azuremarketplace/onebox/"
-                    },
-                    "adminUsername": {
-                        "value": "[parameters('adminUsername')]"
-                    },
-                    "adminPassword": {
-                        "value": "[parameters('adminPassword')]"
-                    },
-                    "oneboxPassword": {
-                        "value": "[parameters('oneboxPassword')]"
-                    },
-                    "vmName": {
-                        "value": "[parameters('vmName')]"
-                    },
-                    "vmSize": {
-                        "value": "[parameters('vmSize')]"
-                    },
-                    "location": {
-                        "value": "[parameters('location')]"
-                    },
-                    "storageAccountName": {
-                        "value": "[parameters('storageAccountName')]"
-                    },
-                    "storageAccountType": {
-                        "value": "[parameters('storageAccountType')]"
-                    }
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 30,
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('vmName')]"
                 }
             }
+        },
+        {
+            "apiVersion": "2018-01-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('networkSecurityGroupName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Remote",
+                        "properties": {
+                            "description": "Allows Remote",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "[variables(concat('sshPort', parameters('osType')))]",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 101,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "WebNode",
+                        "properties": {
+                            "description": "Allows WebNode traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "12800",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 102,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2018-01-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+            ],
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2018-01-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2017-03-30",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftRServer",
+                        "offer": "MLServer-WS2016",
+                        "sku": "Enterprise",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "osdisk",
+                        "vhd": {
+                            "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))).primaryEndpoints.blob, 'vhds/osdisk.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    },
+                    "dataDisks": [
+                        {
+                            "name": "datadisk1",
+                            "diskSizeGB": 100,
+                            "lun": 0,
+                            "vhd": {
+                                "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))).primaryEndpoints.blob, 'vhds/datadisk1.vhd')]"
+                            },
+                            "createOption": "Empty"
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))).primaryEndpoints.blob]"
+                    }
+                }
+            },
+            "resources": [
+                {
+                    "type": "extensions",
+                    "name": "CustomScriptExtension",
+                    "apiVersion": "2017-03-30",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+                    ],
+                    "properties": {
+                        "publisher": "[variables(concat('publisher', parameters('osType')))]",
+                        "type": "[variables(concat('type', parameters('osType')))]",
+                        "typeHandlerVersion": "[variables(concat('typeHandlerVersion', parameters('osType')))]",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "fileUris": [
+                                "[concat(parameters('baseUrl'), '/ConfigureOnebox.ps1')]",
+                                "[concat(parameters('baseUrl'), '/RunConfigureOnebox.ps1')]",
+                                "[concat(parameters('baseUrl'), '/ConfigureOnebox.py')]"
+                            ]
+                        },
+                        "protectedSettings": {
+                            "commandToExecute": "[variables(concat('commandToExecute', parameters('osType')))]"
+                        }
+                    }
+                }
+            ]
         }
     ],
     "outputs": {
-        "OperationalizationVmUrl": {
+        "OperationalizationEndpoint": {
             "type": "string",
-            "value": "[concat('https://portal.azure.com/#resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+            "value": "[concat('http://', reference(variables('publicIPAddressName')).dnsSettings.fqdn, ':12800')]"
         }
     }
 }

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
   "handler": "Microsoft.Compute.MultiVm",
   "version": "0.1.2-preview",
   "parameters": {
@@ -17,13 +18,13 @@
       {
         "name": "osType",
         "type": "Microsoft.Common.DropDown",
-        "label": "Select OS type for the ML Server VM",
+        "label": "Select OS type for the Machine Learning Server VM",
         "defaultValue": "Windows",
-        "toolTip": "ML Server VM is available in four flavors - Windows Server 2016, CentOS based Linux, RedHat based Linux, Ubuntu based Linux",
+        "toolTip": "Machine Learning Server VM is available in four flavors - Windows Server 2016, CentOS based Linux, RedHat based Linux, Ubuntu based Linux",
         "constraints": {
           "allowedValues": [
             {
-              "label": "Windows",
+              "label": "WindowsServer2016",
               "value": "WS2016"
             },
             {
@@ -73,15 +74,15 @@
         },
         "constraints": {
           "required": true,
-          "customPasswordRegex": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[~!@#$%^()-_+=|\/;:,.&<>;]).{8,16}$",
-          "customValidationMessage": "One-box Password must be 8-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s) from ~!@#$%^()-_+=|\/;:,.&<>"
+          "customPasswordRegex": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[~!@#$%^()-_+=|\/;:,.&<>;]).{12,16}$",
+          "customValidationMessage": "One-box Password must be 12-16 characters long and contain at least 1 uppercase character(s), 1+ lowercase character(s), 1+ number(s), and 1+ special character(s) from ~!@#$%^()-_+=|\/;:,.&<>"
         },
         "options": {
           "hideConfirmation": true
         },
         "osPlatform": "Windows",
         "visible": true
-      }
+      }      
     ],
     "steps": [
       {
@@ -104,16 +105,11 @@
               "Standard_DS13_v2",
               "Standard_DS14_v2"
             ],
-            "constraints": {
-              "required": true,
-              "allowedSizes": []
-            },
             "osPlatform": "Windows",
             "imageReference": {
               "publisher": "MicrosoftRServer",
               "offer": "MLServer-WS2016",
-              "sku": "Enterprise",
-              "version": "latest"
+              "sku": "Enterprise"
             }
           },
           {
