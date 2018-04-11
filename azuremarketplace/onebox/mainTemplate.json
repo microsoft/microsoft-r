@@ -241,7 +241,7 @@
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "MicrosoftRServer",
-                        "offer": "MLServer-WS2016",
+                        "offer": "[concat('MLServer-', parameters('osType'))]",
                         "sku": "Enterprise",
                         "version": "latest"
                     },

@@ -80,8 +80,7 @@
         "options": {
           "hideConfirmation": true
         },
-        "osPlatform": "Windows",
-        "visible": true
+        "osPlatform": "Windows"
       }      
     ],
     "steps": [
