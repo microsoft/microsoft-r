@@ -18,8 +18,8 @@
       {
         "name": "osType",
         "type": "Microsoft.Common.DropDown",
-        "label": "Select OS type for the Machine Learning Server VM",
-        "defaultValue": "Windows",
+        "label": "OS Type",
+        "defaultValue": "WindowsServer2016",
         "toolTip": "Machine Learning Server VM is available in four flavors - Windows Server 2016, CentOS based Linux, RedHat based Linux, Ubuntu based Linux",
         "constraints": {
           "allowedValues": [
