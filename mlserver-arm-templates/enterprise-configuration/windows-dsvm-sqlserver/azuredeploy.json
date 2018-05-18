@@ -170,6 +170,7 @@
     "feSubnetName": "WebNodeSubnet",
     "beSubnetName": "ComputeNodeSubnet",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+    "networkSecurityGroupName": "[concat(parameters('dnsPrefix'), 'NSG')]",
     "feSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('feSubnetName'))]",
     "beSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('beSubnetName'))]",
     "publicIPAddressName": "PublicIP",
@@ -192,6 +193,29 @@
     "imageSku": "windows2016"
   },
   "resources": [
+    {
+      "apiVersion": "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('networkSecurityGroupName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "RDP",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[concat('sa', variables('uniqueStringArray')[copyIndex()])]",
@@ -587,6 +611,9 @@
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vnetName')]",
       "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+      ],
       "apiVersion": "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]",
       "properties": {
         "addressSpace": {
@@ -598,13 +625,19 @@
           {
             "name": "[variables('feSubnetName')]",
             "properties": {
-              "addressPrefix": "10.0.0.0/24"
+              "addressPrefix": "10.0.0.0/24",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+              }
             }
           },
           {
             "name": "[variables('beSubnetName')]",
             "properties": {
-              "addressPrefix": "10.0.1.0/24"
+              "addressPrefix": "10.0.1.0/24",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+              }
             }
           },
           {
