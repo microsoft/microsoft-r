@@ -210,34 +210,6 @@
               "priority": 100,
               "direction": "Inbound"
             }
-          },
-          {
-            "name": "WebNode",
-            "properties": {
-              "description": "Allows WebNode traffic",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "12800",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 101,
-              "direction": "Inbound"
-            }
-          },
-          {
-            "name": "ComputeNode",
-            "properties": {
-              "description": "Allows ComputeNode traffic",
-              "protocol": "Tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "12805",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 102,
-              "direction": "Inbound"
-            }
           }
         ]
       }
@@ -678,7 +650,7 @@
               "probe": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/probes/lbprobe')]"
               },
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "frontendPort": 80,
               "backendPort": 12800,
               "enableFloatingIP": false,
@@ -689,7 +661,7 @@
         "probes": [
           {
             "properties": {
-              "protocol": "tcp",
+              "protocol": "Tcp",
               "port": 12800,
               "intervalInSeconds": 10,
               "numberOfProbes": 2
@@ -704,10 +676,10 @@
               "frontendIPConfiguration": {
                 "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('webNodeLoadBalancerName')), '/frontendIPConfigurations/', variables('webNodeLoadBalancerFrontEndName'))]"
               },
-              "protocol": "tcp",
-              "frontendPortRangeStart": "50000",
-              "frontendPortRangeEnd": "50099",
-              "backendPort": "22"
+              "protocol": "Tcp",
+              "frontendPortRangeStart": 50000,
+              "frontendPortRangeEnd": 50099,
+              "backendPort": 22
             }
           }
         ]
