@@ -62,7 +62,7 @@ Write-Output $perror
 taskkill /f /im dotnet.exe
 Disable-ScheduledTask -TaskName "autostartwebnode"
 
-echo "<configuration><system.webServer><handlers><add name=""aspNetCore"" path=""*"" verb=""*"" modules=""AspNetCoreModule"" resourceType=""Unspecified"" /></handlers><aspNetCore requestTimeout=""01:00:00"" processPath=""C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\dotnet\dotnet.exe"" arguments=""./Microsoft.MLServer.WebNode.dll"" stdoutLogEnabled=""true"" stdoutLogFile="".\logs\stdout"" forwardWindowsAuthToken=""false""><environmentVariables><environmentVariable name=""COMPlus_ReadyToRunExcludeList"" value=""System.Security.Cryptography.X509Certificates"" /></environmentVariables></aspNetCore></system.webServer></configuration>" > "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\web.config"
+echo "<configuration><system.webServer><security><requestFiltering><requestLimits maxAllowedContentLength=""4294967295""/></requestFiltering></security><handlers><add name=""aspNetCore"" path=""*"" verb=""*"" modules=""AspNetCoreModule"" resourceType=""Unspecified"" /></handlers><aspNetCore requestTimeout=""01:00:00"" processPath=""C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\dotnet\dotnet.exe"" arguments=""./Microsoft.MLServer.WebNode.dll"" stdoutLogEnabled=""true"" stdoutLogFile="".\logs\stdout"" forwardWindowsAuthToken=""false""><environmentVariables><environmentVariable name=""COMPlus_ReadyToRunExcludeList"" value=""System.Security.Cryptography.X509Certificates"" /></environmentVariables></aspNetCore></system.webServer></configuration>" > "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.MLServer.WebNode\web.config"
 
 $hostingBundleDownloadJob = Start-Job {Invoke-WebRequest "https://go.microsoft.com/fwlink/?linkid=844461" -OutFile "C:\WindowsAzure\HostingBundle.exe"}
 Install-WindowsFeature -name Web-Server -IncludeManagementTools
@@ -78,6 +78,8 @@ $directoryPath = "C:\Program Files\Microsoft\ML Server\R_SERVER\o16n\Microsoft.M
 Push-Location IIS:\AppPools\
 $appPool = New-Item $iisAppPoolName
 $appPool | Set-ItemProperty -Name "managedRuntimeVersion" -Value ""
+$appPool | Set-ItemProperty -Name "startMode" -Value "alwaysrunning"
+$appPool | Set-ItemProperty -Name "processModel.idleTimeout" -Value "0"
 $appPool | Set-ItemProperty -Name "processModel.identityType" -Value "NetworkService"
 Pop-Location
 
