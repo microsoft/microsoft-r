@@ -792,6 +792,7 @@
               "Port": "[variables('appGwBackendPort')]",
               "Protocol": "Http",
               "CookieBasedAffinity": "Disabled",
+              "RequestTimeout": 3600,
               "probe": {
                 "id": "[concat(resourceId('Microsoft.Network/applicationGateways', variables('appGwName')), '/probes/probe1')]"
               }
