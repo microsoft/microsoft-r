@@ -1,4 +1,6 @@
-
+'''
+The following mode is derived from tensor flow image recognition tutorial classify_image.py (image_net)
+'''
 import base64
 import tensorflow as tf
 import numpy as np
