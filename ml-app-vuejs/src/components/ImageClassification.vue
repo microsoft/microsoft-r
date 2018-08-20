@@ -67,8 +67,10 @@ export default {
             }
             console.error(err);
           } else {
-            model.access_token = data.access_token
+            model.access_token = data.access_token;
           }
+
+          model.password = '';
         });
     },
     handleImageUpload(e) {      
