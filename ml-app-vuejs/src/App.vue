@@ -29,8 +29,9 @@ export default {
 
 header h1 {
   color: white;
-  background-color: skyblue;
+  background-color: #00a1f1;
   margin: 2px;
+  padding: 5px;
   font-size: 1.6em;
   font-weight: 200;
 }

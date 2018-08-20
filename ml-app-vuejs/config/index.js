@@ -13,7 +13,11 @@ module.exports = {
     proxyTable: {
       // proxy all API requests
       '/api': {
-        target: 'http://mlserver.host:12800', // todo: replace URL
+        target: 'http://mlserver.host:12800', // todo: replace with acutal URL to ML Service
+        changeOrigin: true
+      },
+      '/login': {
+        target: 'http://mlserver.host:12800', // todo: replace with acutal URL to ML Service
         changeOrigin: true
       }
     },
