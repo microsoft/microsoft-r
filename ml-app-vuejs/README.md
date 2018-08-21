@@ -2,7 +2,7 @@
 
 > Machine Learning VueJS App
 
-This project shows how to consume a Machine Learning Service from a javascript app, using an Tensorflow image classification model as an example.
+This project shows how to consume a Machine Learning Service from a javascript app, using a Tensorflow image classification model as an example.
 
 ## Project Template
 This project was created from
@@ -55,6 +55,6 @@ See `Webpack Configuration` in [README.md](lib/image-classification-client/READM
 
 After that we can point to the Machine Learning service in `proxyTable` in `config/index.js` and use the generated client package `image_classification` in our javascript code.
 
-The main compoment of the app is `ImageClassification.vue`, in which we login to acquire an access token and use it to make HTTP requests to the ImageClassification service, which wass published and exposed as a REST API endpoint.
+The main component of the app is `ImageClassification.vue`, in which we login to acquire an access token and use it to make HTTP requests to the ImageClassification service, which was published and exposed as a REST API endpoint.
 
 In this example, all API requests are sent to the some domain where the web app is hosted and then proxied (see `proxyTable` in `config/index.js`) to Machine Learning service. In production, API requests can be re-routed to the API servers using reverse proxy. You can also [enable CORS to allow cross-domain API requests](https://docs.microsoft.com/en-us/machine-learning-server/operationalize/configure-cors) from the web app in the browser directly.

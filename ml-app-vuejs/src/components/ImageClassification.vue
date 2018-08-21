@@ -15,7 +15,7 @@
         <canvas id="canvas" class="img-thumbnail" width=512 height=512></canvas>
         <div class="large-12 medium-12 small-12 cell">
           <label class="btn btn-lg">
-            <span class="glyphicon glyphicon-camera"/>
+            <span class="glyphicon glyphicon-camera"></span>
             <input type="file" style="display: none;" class="form-control" accept="image/*;capture=camera" id="file" ref="file" v-on:change="handleImageUpload()"/>
           </label>
         </div>      
