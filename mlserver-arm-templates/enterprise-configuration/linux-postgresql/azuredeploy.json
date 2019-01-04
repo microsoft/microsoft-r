@@ -231,21 +231,25 @@
     {
       "type": "Microsoft.DBforPostgreSQL/servers",
       "sku": {
-          "name": "PGSQLB100",
+          "name": "B_Gen5_1",
           "tier": "Basic",
-          "capacity": 100,
+          "capacity": 1,
           "size": 51200,
-          "family": "SkuFamily"
+          "family": "Gen5"
       },
       "kind": "",
       "name": "[variables('postgresqlName')]",
-      "apiVersion": "2016-02-01-privatepreview",
+      "apiVersion": "2017-12-01-preview",
       "location": "[resourceGroup().location]",
       "properties": {
           "version": "9.6",
           "administratorLogin": "[parameters('adminUsername')]",
           "administratorLoginPassword": "[parameters('adminPassword')]",
-          "storageMB": 51200
+          "storageProfile": {
+            "storageMB": 51200,
+            "backupRetentionDays": 7,
+            "geoRedundantBackup": "Disabled"
+          }
       },
       "resources":[
         {
