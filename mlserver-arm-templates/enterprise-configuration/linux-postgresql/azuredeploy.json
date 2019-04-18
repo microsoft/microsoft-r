@@ -254,7 +254,7 @@
       "resources":[
         {
           "type":"firewallrules",
-          "apiVersion":"2016-02-01-privatepreview",
+          "apiVersion":"2017-12-01",
           "dependsOn":[
             "[concat('Microsoft.DBforPostgreSQL/servers/', variables('postgresqlName'))]"
           ],
